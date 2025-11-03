@@ -16,6 +16,14 @@
             <span class="settings-label">Audio Settings</span>
         </button>
 
+        <button class="timer-icon" onclick="toggleTimerMenu()" aria-label="Session Timer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12,6 12,12 16,14"></polyline>
+            </svg>
+            <span class="timer-label">Timer</span>
+        </button>
+
         <div class="settings-menu" id="settingsMenu">
             <div class="settings-menu-header">
                 <h3>Audio Settings</h3>
@@ -30,12 +38,46 @@
                     </label>
                 </div>
                 <div class="music-selection" id="pingSelection" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
-                    <label class="selection-label">Ping Style:</label>
-                    <select id="pingStyle" onchange="changePingStyle()">
-                        <option value="medium">Medium (A3 - 220Hz)</option>
-                        <option value="low">Low (A2 - 110Hz)</option>
-                        <option value="high">High (A4 - 440Hz)</option>
-                    </select>
+                    <label class="selection-label">Dynamic Ping System:</label>
+                    <div class="ping-info">
+                        <div class="ping-phase">• Breathe In: <span class="ping-tone">Low tone</span> (A2 - 110Hz)</div>
+                        <div class="ping-phase">• Hold: <span class="ping-tone">Medium tone</span> (A3 - 220Hz)</div>
+                        <div class="ping-phase">• Breathe Out: <span class="ping-tone">High tone</span> (A4 - 440Hz)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="timer-menu" id="timerMenu">
+            <div class="timer-menu-header">
+                <h3>Session Timer</h3>
+                <button class="close-btn" onclick="toggleTimerMenu()">×</button>
+            </div>
+            <div class="timer-menu-content">
+                <div class="timer-status" id="timerStatus">No timer set</div>
+                <div class="timer-display" id="timerDisplay" style="display: none;">00:00</div>
+                
+                <div class="timer-presets">
+                    <h4>Quick Start</h4>
+                    <div class="preset-timer-buttons">
+                        <button class="timer-preset-btn" onclick="setTimerPreset(2)">2 min</button>
+                        <button class="timer-preset-btn" onclick="setTimerPreset(5)">5 min</button>
+                        <button class="timer-preset-btn" onclick="setTimerPreset(10)">10 min</button>
+                    </div>
+                </div>
+                
+                <div class="custom-timer">
+                    <h4>Custom Duration</h4>
+                    <div class="timer-input-group">
+                        <label>Minutes: <span id="timerMinValue">5</span></label>
+                        <input type="range" id="timerMinSlider" min="1" max="60" value="5" oninput="updateTimerDisplay()">
+                    </div>
+                    <button class="timer-set-btn" onclick="setCustomTimer()">Set Custom Timer</button>
+                </div>
+                
+                <div class="timer-controls" id="timerControls" style="display: none;">
+                    <button class="timer-start-btn" id="timerStartBtn" onclick="startTimer()">Start Timer</button>
+                    <button class="timer-stop-btn" id="timerStopBtn" onclick="stopTimer()" style="display: none;">Stop Timer</button>
                 </div>
             </div>
         </div>
@@ -55,6 +97,10 @@
             </div>
             
             <div class="custom-controls" id="customControls" style="display: none;">
+                <div class="custom-controls-header">
+                    <h4>Custom Pattern</h4>
+                    <button class="close-btn" onclick="closeCustomControls()">×</button>
+                </div>
                 <div class="slider-group">
                     <label>Breathe In: <span id="breatheInValue">4</span>s</label>
                     <input type="range" id="breatheInSlider" min="2" max="10" value="4" oninput="updateCustom()">
@@ -71,6 +117,13 @@
                     <label>Hold (After Out): <span id="holdOutValue">4</span>s</label>
                     <input type="range" id="holdOutSlider" min="0" max="10" value="4" oninput="updateCustom()">
                 </div>
+                <div class="custom-actions">
+                    <button class="save-btn" onclick="saveCustomPattern()">Save Pattern</button>
+                    <div class="saved-actions" id="savedActions" style="display: none;">
+                        <button class="load-btn" onclick="loadCustomPattern()">Load Saved</button>
+                        <button class="clear-btn" onclick="clearCustomPattern()" title="Remove saved pattern">Clear</button>
+                    </div>
+                </div>
             </div>
 
             <div class="controls">
@@ -84,6 +137,11 @@
         
         <div class="breathing-box">
             <div class="box" id="breathingBox"></div>
+        </div>
+        
+        <div class="session-timer-display" id="sessionTimerDisplay" style="display: none;">
+            <div class="session-timer-text">Session Time Remaining</div>
+            <div class="session-timer-countdown" id="sessionTimerCountdown">00:00</div>
         </div>
         
         <div class="info">

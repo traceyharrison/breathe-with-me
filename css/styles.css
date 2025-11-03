@@ -10,10 +10,11 @@ body {
     min-height: 100vh;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     color: #ffffff;
     overflow-x: hidden;
     position: relative;
+    padding-top: 20px;
 }
 
 body::before {
@@ -114,10 +115,11 @@ body::after {
 
 .container {
     text-align: center;
-    padding: 20px;
+    padding: 80px 20px 20px;
     position: relative;
     z-index: 1;
     max-width: 900px;
+    width: 100%;
 }
 
 .settings-icon {
@@ -134,7 +136,7 @@ body::after {
     align-items: center;
     gap: 8px;
     transition: all 0.3s;
-    z-index: 1000;
+    z-index: 9999;
     color: white;
     box-shadow: 0 4px 20px rgba(99, 102, 241, 0.2);
 }
@@ -145,10 +147,35 @@ body::after {
     box-shadow: 0 6px 30px rgba(99, 102, 241, 0.4);
 }
 
-.settings-label {
+.settings-label, .timer-label {
     font-size: 0.9em;
     font-weight: 500;
     letter-spacing: 0.3px;
+}
+
+.timer-icon {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    padding: 12px 20px;
+    border-radius: 50px;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    backdrop-filter: blur(20px);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+    z-index: 9999;
+    color: white;
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2);
+}
+
+.timer-icon:hover {
+    background: rgba(59, 130, 246, 0.25);
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: 0 6px 30px rgba(59, 130, 246, 0.4);
 }
 
 .settings-menu {
@@ -165,7 +192,7 @@ body::after {
     transform: translateY(-10px);
     pointer-events: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 999;
+    z-index: 9998;
 }
 
 .settings-menu.active {
@@ -289,6 +316,32 @@ body::after {
     margin-bottom: 8px;
 }
 
+.ping-info {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ping-phase {
+    font-size: 0.85em;
+    margin-bottom: 6px;
+    opacity: 0.8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ping-phase:last-child {
+    margin-bottom: 0;
+}
+
+.ping-tone {
+    opacity: 1;
+    font-weight: 500;
+    color: #a78bfa;
+}
+
 select {
     width: 100%;
     padding: 10px 14px;
@@ -314,6 +367,188 @@ select:focus {
 select option {
     background: #0a0520;
     color: white;
+}
+
+/* Timer Menu Styles */
+.timer-menu {
+    position: fixed;
+    top: 84px;
+    left: 24px;
+    width: 320px;
+    background: rgba(10, 5, 32, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 9998;
+}
+
+.timer-menu.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.timer-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.timer-menu-header h3 {
+    font-size: 1.1em;
+    font-weight: 500;
+    margin: 0;
+}
+
+.timer-menu-content {
+    padding: 20px 24px;
+}
+
+.timer-status {
+    font-size: 0.9em;
+    opacity: 0.8;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.timer-display {
+    font-size: 2.5em;
+    font-weight: 300;
+    text-align: center;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.timer-presets h4,
+.custom-timer h4 {
+    font-size: 0.9em;
+    font-weight: 500;
+    margin: 0 0 12px 0;
+    opacity: 0.9;
+}
+
+.preset-timer-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.timer-preset-btn {
+    flex: 1;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.85em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.timer-preset-btn:hover {
+    background: rgba(59, 130, 246, 0.25);
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+.timer-input-group {
+    margin-bottom: 12px;
+}
+
+.timer-input-group label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 0.85em;
+    opacity: 0.8;
+    font-weight: 400;
+}
+
+.timer-input-group input[type="range"] {
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.timer-input-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
+    transition: all 0.2s;
+}
+
+.timer-set-btn {
+    width: 100%;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.9em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 16px;
+}
+
+.timer-set-btn:hover {
+    background: rgba(59, 130, 246, 0.25);
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+.timer-controls {
+    display: flex;
+    gap: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 16px;
+}
+
+.timer-start-btn, .timer-stop-btn {
+    flex: 1;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #6ee7b7;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.9em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.timer-stop-btn {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+}
+
+.timer-start-btn:hover {
+    background: rgba(16, 185, 129, 0.25);
+    border-color: rgba(16, 185, 129, 0.5);
+}
+
+.timer-stop-btn:hover {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.5);
 }
 
 h1 {
@@ -401,8 +636,22 @@ h1 {
 
 .custom-controls {
     margin-top: 16px;
-    padding-top: 16px;
+    padding-top: 0;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.custom-controls-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0 12px 0;
+}
+
+.custom-controls-header h4 {
+    font-size: 1em;
+    font-weight: 500;
+    margin: 0;
+    opacity: 0.9;
 }
 
 .slider-group {
@@ -500,6 +749,38 @@ h1 {
     filter: blur(10px);
 }
 
+.session-timer-display {
+    text-align: center;
+    margin: 30px 0 20px 0;
+    padding: 20px;
+    background: rgba(10, 5, 32, 0.8);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.session-timer-text {
+    font-size: 0.9em;
+    opacity: 0.7;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+    font-weight: 400;
+}
+
+.session-timer-countdown {
+    font-size: 2.5em;
+    font-weight: 300;
+    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1px;
+}
+
 .instruction {
     font-size: 1.4em;
     margin-bottom: 16px;
@@ -521,6 +802,68 @@ h1 {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     letter-spacing: -2px;
+}
+
+.custom-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.saved-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.save-btn, .load-btn, .clear-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.85em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+}
+
+.save-btn {
+    width: 100%;
+}
+
+.load-btn {
+    flex: 1;
+}
+
+.clear-btn {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    padding: 8px;
+    min-width: 60px;
+}
+
+.save-btn:hover, .load-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.clear-btn:hover {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.4);
+    transform: translateY(-1px);
+}
+
+.save-btn:active, .load-btn:active, .clear-btn:active {
+    transform: translateY(0);
 }
 
 .controls {
@@ -617,9 +960,17 @@ button:disabled::before {
 }
 
 @media (max-width: 768px) {
+    body {
+        align-items: flex-start;
+    }
+    
+    .container {
+        padding: 70px 12px 12px;
+    }
+
     h1 {
         font-size: 1.8em;
-        margin-top: 70px;
+        margin-top: 0;
     }
 
     .settings-icon {
@@ -629,13 +980,27 @@ button:disabled::before {
         font-size: 0.9em;
     }
 
-    .settings-label {
+    .timer-icon {
+        top: 12px;
+        left: 12px;
+        padding: 10px 16px;
+        font-size: 0.9em;
+    }
+
+    .settings-label, .timer-label {
         font-size: 0.8em;
     }
 
     .settings-menu {
         top: 60px;
         right: 12px;
+        width: calc(100vw - 24px);
+        max-width: 320px;
+    }
+
+    .timer-menu {
+        top: 60px;
+        left: 12px;
         width: calc(100vw - 24px);
         max-width: 320px;
     }
@@ -667,6 +1032,16 @@ button:disabled::before {
     
     .counter {
         font-size: 4em;
+    }
+
+    .session-timer-display {
+        max-width: 280px;
+        margin: 20px auto;
+        padding: 16px;
+    }
+
+    .session-timer-countdown {
+        font-size: 2em;
     }
 
     .settings {

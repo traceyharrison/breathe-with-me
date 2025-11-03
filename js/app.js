@@ -7,6 +7,12 @@ let currentPattern = 'box';
 let pingEnabled = true;
 let pingStyle = 'medium';
 
+// Timer variables
+let timerIntervalId = null;
+let timerDuration = 0; // in seconds
+let timerRemaining = 0; // in seconds
+let isTimerActive = false;
+
 // Breathing patterns
 let phases = [
     { name: 'Breathe In', class: 'breathe-in', duration: 4 },
@@ -22,20 +28,43 @@ const pingConfigs = {
     'high': { frequency: 440, volume: 0.08, duration: 1.0 }     // A4 - Higher, softer, shorter
 };
 
+// Phase-specific ping style mapping
+function getPingStyleForPhase(phaseName) {
+    switch(phaseName) {
+        case 'Breathe In':
+            return 'low';
+        case 'Hold':
+            return 'medium';
+        case 'Breathe Out':
+            return 'high';
+        default:
+            return 'medium'; // Default to medium for any unrecognized phase
+    }
+}
+
 // Settings menu toggle
 function toggleSettingsMenu() {
     const menu = document.getElementById('settingsMenu');
     menu.classList.toggle('active');
 }
 
-// Close menu when clicking outside
+// Close menus when clicking outside
 document.addEventListener('click', (e) => {
-    const menu = document.getElementById('settingsMenu');
-    const icon = document.querySelector('.settings-icon');
-    if (menu.classList.contains('active') && 
-        !menu.contains(e.target) && 
-        !icon.contains(e.target)) {
-        menu.classList.remove('active');
+    const settingsMenu = document.getElementById('settingsMenu');
+    const settingsIcon = document.querySelector('.settings-icon');
+    const timerMenu = document.getElementById('timerMenu');
+    const timerIcon = document.querySelector('.timer-icon');
+    
+    if (settingsMenu.classList.contains('active') && 
+        !settingsMenu.contains(e.target) && 
+        !settingsIcon.contains(e.target)) {
+        settingsMenu.classList.remove('active');
+    }
+    
+    if (timerMenu.classList.contains('active') && 
+        !timerMenu.contains(e.target) && 
+        !timerIcon.contains(e.target)) {
+        timerMenu.classList.remove('active');
     }
 });
 
@@ -44,8 +73,145 @@ function togglePing() {
     pingEnabled = document.getElementById('pingToggle').checked;
 }
 
-function changePingStyle() {
-    pingStyle = document.getElementById('pingStyle').value;
+
+
+// Timer menu toggle
+function toggleTimerMenu() {
+    const menu = document.getElementById('timerMenu');
+    menu.classList.toggle('active');
+}
+
+// Timer functions
+function updateTimerDisplay() {
+    const minutes = document.getElementById('timerMinSlider').value;
+    document.getElementById('timerMinValue').textContent = minutes;
+}
+
+function setTimerPreset(minutes) {
+    timerDuration = minutes * 60; // convert to seconds
+    timerRemaining = timerDuration;
+    updateTimerUI();
+    showTimerControls();
+}
+
+function setCustomTimer() {
+    const minutes = parseInt(document.getElementById('timerMinSlider').value);
+    timerDuration = minutes * 60;
+    timerRemaining = timerDuration;
+    updateTimerUI();
+    showTimerControls();
+}
+
+function showTimerControls() {
+    document.getElementById('timerControls').style.display = 'block';
+    document.getElementById('timerDisplay').style.display = 'block';
+    document.getElementById('timerStatus').textContent = `Timer set for ${Math.floor(timerDuration / 60)} minutes`;
+}
+
+function startTimer() {
+    if (timerRemaining <= 0) return;
+    
+    isTimerActive = true;
+    document.getElementById('timerStartBtn').style.display = 'none';
+    document.getElementById('timerStopBtn').style.display = 'inline-block';
+    document.getElementById('timerStatus').textContent = 'Timer running...';
+    
+    // Show the session timer display below the breathing circle and hide menu timer display
+    document.getElementById('sessionTimerDisplay').style.display = 'block';
+    updateSessionTimerDisplay(); // Initial display update
+    
+    timerIntervalId = setInterval(() => {
+        timerRemaining--;
+        updateTimerUI();
+        updateSessionTimerDisplay();
+        
+        if (timerRemaining <= 0) {
+            timerComplete();
+        }
+    }, 1000);
+}
+
+function stopTimer() {
+    if (timerIntervalId) {
+        clearInterval(timerIntervalId);
+        timerIntervalId = null;
+    }
+    
+    isTimerActive = false;
+    document.getElementById('timerStartBtn').style.display = 'inline-block';
+    document.getElementById('timerStopBtn').style.display = 'none';
+    document.getElementById('timerStatus').textContent = 'Timer stopped';
+    
+    // Hide the session timer display
+    document.getElementById('sessionTimerDisplay').style.display = 'none';
+}
+
+function resetTimer() {
+    stopTimer();
+    timerRemaining = 0;
+    timerDuration = 0;
+    document.getElementById('timerControls').style.display = 'none';
+    document.getElementById('timerDisplay').style.display = 'none';
+    document.getElementById('timerStatus').textContent = 'No timer set';
+    
+    // Hide the session timer display
+    document.getElementById('sessionTimerDisplay').style.display = 'none';
+}
+
+function updateTimerUI() {
+    const minutes = Math.floor(timerRemaining / 60);
+    const seconds = timerRemaining % 60;
+    const display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    document.getElementById('timerDisplay').textContent = display;
+}
+
+function updateSessionTimerDisplay() {
+    const minutes = Math.floor(timerRemaining / 60);
+    const seconds = timerRemaining % 60;
+    const display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    document.getElementById('sessionTimerCountdown').textContent = display;
+}
+
+function timerComplete() {
+    stopTimer();
+    document.getElementById('timerStatus').textContent = 'Time\'s up!';
+    
+    // Show completion message on the session display briefly
+    document.getElementById('sessionTimerDisplay').style.display = 'block';
+    document.getElementById('sessionTimerCountdown').textContent = 'Time\'s Up!';
+    document.querySelector('.session-timer-text').textContent = 'Session Complete';
+    
+    playTimerBell();
+    
+    // Reset timer after a delay
+    setTimeout(() => {
+        document.querySelector('.session-timer-text').textContent = 'Session Time Remaining';
+        resetTimer();
+    }, 3000);
+}
+
+function playTimerBell() {
+    initAudio();
+    if (!audioContext) return;
+    
+    // Create a gentle, low bell sound
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // Gentle bell frequency (lower than the ping)
+    oscillator.frequency.setValueAtTime(174.61, audioContext.currentTime); // F3 note
+    oscillator.type = 'sine';
+    
+    // Gentle volume with slow fade
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.08, audioContext.currentTime + 0.1);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 3.0);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 3.0);
 }
 
 // Breathing pattern presets
@@ -95,6 +261,12 @@ function setPreset(pattern) {
             updateCustom();
             break;
     }
+    
+    // Reset custom button text if not in custom mode
+    if (pattern !== 'custom') {
+        const customBtn = document.querySelector('.preset-btn[onclick="setPreset(\'custom\')"]');
+        customBtn.textContent = 'Custom';
+    }
 
     // Update counter display
     document.getElementById('counter').textContent = phases[0].duration;
@@ -120,6 +292,116 @@ function updateCustom() {
     ];
 
     document.getElementById('counter').textContent = breatheIn;
+    
+    // Update custom button text to show current pattern
+    updateCustomButtonText(breatheIn, holdIn, breatheOut, holdOut);
+}
+
+// Update the custom button text to show current pattern
+function updateCustomButtonText(breatheIn, holdIn, breatheOut, holdOut) {
+    const customBtn = document.querySelector('.preset-btn[onclick="setPreset(\'custom\')"]');
+    customBtn.textContent = `Custom (${breatheIn}-${holdIn}-${breatheOut}-${holdOut})`;
+}
+
+// Save custom pattern to localStorage
+function saveCustomPattern() {
+    const breatheIn = parseInt(document.getElementById('breatheInSlider').value);
+    const holdIn = parseInt(document.getElementById('holdInSlider').value);
+    const breatheOut = parseInt(document.getElementById('breatheOutSlider').value);
+    const holdOut = parseInt(document.getElementById('holdOutSlider').value);
+    
+    const customPattern = {
+        breatheIn: breatheIn,
+        holdIn: holdIn,
+        breatheOut: breatheOut,
+        holdOut: holdOut,
+        savedAt: new Date().toLocaleString()
+    };
+    
+    localStorage.setItem('breathingCustomPattern', JSON.stringify(customPattern));
+    
+    // Show saved actions and provide feedback
+    const savedActions = document.getElementById('savedActions');
+    savedActions.style.display = 'flex';
+    savedActions.querySelector('.load-btn').title = `Saved pattern: ${breatheIn}-${holdIn}-${breatheOut}-${holdOut} (${customPattern.savedAt})`;
+    
+    // Temporary feedback
+    const saveBtn = document.querySelector('.save-btn');
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = 'Saved!';
+    saveBtn.style.background = '#10b981';
+    setTimeout(() => {
+        saveBtn.textContent = originalText;
+        saveBtn.style.background = '';
+    }, 1500);
+}
+
+// Load custom pattern from localStorage
+function loadCustomPattern() {
+    const savedPattern = localStorage.getItem('breathingCustomPattern');
+    
+    if (savedPattern) {
+        const pattern = JSON.parse(savedPattern);
+        
+        // Set slider values
+        document.getElementById('breatheInSlider').value = pattern.breatheIn;
+        document.getElementById('holdInSlider').value = pattern.holdIn;
+        document.getElementById('breatheOutSlider').value = pattern.breatheOut;
+        document.getElementById('holdOutSlider').value = pattern.holdOut;
+        
+        // Update the display and pattern
+        updateCustom();
+        
+        // Provide feedback
+        const loadBtn = document.querySelector('.load-btn');
+        const originalText = loadBtn.textContent;
+        loadBtn.textContent = 'Loaded!';
+        loadBtn.style.background = '#3b82f6';
+        setTimeout(() => {
+            loadBtn.textContent = originalText;
+            loadBtn.style.background = '';
+        }, 1500);
+    }
+}
+
+// Clear saved pattern
+function clearCustomPattern() {
+    localStorage.removeItem('breathingCustomPattern');
+    document.getElementById('savedActions').style.display = 'none';
+    
+    // Provide feedback
+    const saveBtn = document.querySelector('.save-btn');
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = 'Pattern Cleared';
+    saveBtn.style.background = '#ef4444';
+    setTimeout(() => {
+        saveBtn.textContent = originalText;
+        saveBtn.style.background = '';
+    }, 1500);
+}
+
+// Check for saved pattern on page load
+function checkForSavedPattern() {
+    const savedPattern = localStorage.getItem('breathingCustomPattern');
+    if (savedPattern) {
+        const pattern = JSON.parse(savedPattern);
+        const savedActions = document.getElementById('savedActions');
+        savedActions.style.display = 'flex';
+        savedActions.querySelector('.load-btn').title = `Saved pattern: ${pattern.breatheIn}-${pattern.holdIn}-${pattern.breatheOut}-${pattern.holdOut} (${pattern.savedAt})`;
+    }
+}
+
+// Close custom controls
+function closeCustomControls() {
+    // Hide the custom controls
+    document.getElementById('customControls').style.display = 'none';
+    
+    // Remove active state from custom button and set box preset as active
+    document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector('.preset-btn[onclick="setPreset(\'box\')"]').classList.add('active');
+    
+    // Switch back to box breathing pattern
+    setPreset('box');
 }
 
 // Audio context initialization
@@ -130,13 +412,16 @@ function initAudio() {
 }
 
 // Generate ping sound
-function playBell() {
+function playBell(phaseIndex = 0) {
     if (!pingEnabled) return;
     
     initAudio();
     
     const now = audioContext.currentTime;
-    const config = pingConfigs[pingStyle];
+    
+    // Determine which ping style to use based on the phase
+    const currentPingStyle = getPingStyleForPhase(phases[phaseIndex].name);
+    const config = pingConfigs[currentPingStyle];
     
     // Create a single oscillator for a calming ping
     const oscillator = audioContext.createOscillator();
@@ -201,7 +486,7 @@ function startBreathing() {
     
     updatePhase(); // Set the visual state for the phase
     updateDisplay(); // Update text displays
-    playBell(); // Initial ping
+    playBell(currentPhase); // Initial ping
     
     intervalId = setInterval(() => {
         currentCount--;
@@ -217,7 +502,7 @@ function startBreathing() {
             
             currentCount = phases[currentPhase].duration;
             updatePhase(); // Update the circle animation for new phase
-            playBell(); // Ping at phase transition
+            playBell(currentPhase); // Ping at phase transition
         }
         
         updateDisplay(); // Only update counter text
@@ -246,4 +531,9 @@ document.addEventListener('visibilitychange', () => {
     if (document.hidden && intervalId) {
         stopBreathing();
     }
+});
+
+// Initialize the app
+document.addEventListener('DOMContentLoaded', () => {
+    checkForSavedPattern();
 });
