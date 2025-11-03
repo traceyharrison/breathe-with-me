@@ -48,6 +48,33 @@ function toggleSettingsMenu() {
     menu.classList.toggle('active');
 }
 
+// Audio initialization on user interaction (required for mobile)
+let audioInitialized = false;
+
+async function handleUserInteraction() {
+    if (!audioInitialized) {
+        const success = await initAudio();
+        if (success) {
+            audioInitialized = true;
+            updateAudioStatus('Ready');
+            console.log('Audio initialized on user interaction');
+        } else {
+            updateAudioStatus('Not supported');
+        }
+    }
+}
+
+function updateAudioStatus(status) {
+    const statusElement = document.getElementById('audioStatusText');
+    if (statusElement) {
+        statusElement.textContent = status;
+    }
+}
+
+// Add event listeners for user interaction to initialize audio
+document.addEventListener('touchstart', handleUserInteraction, { once: true });
+document.addEventListener('click', handleUserInteraction, { once: true });
+
 // Close menus when clicking outside
 document.addEventListener('click', (e) => {
     const settingsMenu = document.getElementById('settingsMenu');
@@ -174,6 +201,7 @@ function updateSessionTimerDisplay() {
 
 function timerComplete() {
     stopTimer();
+    stopBreathing(); // Stop the breathing exercise when timer completes
     document.getElementById('timerStatus').textContent = 'Time\'s up!';
     
     // Show completion message on the session display briefly
@@ -259,6 +287,7 @@ function setPreset(pattern) {
         case 'custom':
             document.getElementById('customControls').style.display = 'block';
             updateCustom();
+            displaySavedPatterns(); // Show saved patterns when opening custom controls
             break;
     }
     
@@ -303,14 +332,62 @@ function updateCustomButtonText(breatheIn, holdIn, breatheOut, holdOut) {
     customBtn.textContent = `Custom (${breatheIn}-${holdIn}-${breatheOut}-${holdOut})`;
 }
 
-// Save custom pattern to localStorage
+// Theme management
+function setTheme(themeName) {
+    // Remove active class from all theme buttons
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Add active class to selected theme button
+    const selectedBtn = document.querySelector(`.theme-btn[data-theme="${themeName}"]`);
+    if (selectedBtn) {
+        selectedBtn.classList.add('active');
+    }
+    
+    // Apply theme to document
+    document.documentElement.setAttribute('data-theme', themeName);
+    
+    // Save theme preference
+    localStorage.setItem('breathingAppTheme', themeName);
+}
+
+// Load saved theme on startup
+function loadTheme() {
+    const savedTheme = localStorage.getItem('breathingAppTheme') || 'night-sky';
+    setTheme(savedTheme);
+}
+
+// Save custom pattern with name to localStorage
 function saveCustomPattern() {
     const breatheIn = parseInt(document.getElementById('breatheInSlider').value);
     const holdIn = parseInt(document.getElementById('holdInSlider').value);
     const breatheOut = parseInt(document.getElementById('breatheOutSlider').value);
     const holdOut = parseInt(document.getElementById('holdOutSlider').value);
+    const patternName = document.getElementById('patternName').value.trim();
     
-    const customPattern = {
+    // Validate pattern name
+    if (!patternName) {
+        alert('Please enter a name for your pattern');
+        document.getElementById('patternName').focus();
+        return;
+    }
+    
+    // Get existing patterns
+    const savedPatterns = getSavedPatterns();
+    
+    // Check if name already exists
+    if (savedPatterns.some(pattern => pattern.name.toLowerCase() === patternName.toLowerCase())) {
+        if (!confirm(`A pattern named "${patternName}" already exists. Do you want to overwrite it?`)) {
+            return;
+        }
+        // Remove existing pattern with same name
+        deleteSavedPattern(patternName);
+    }
+    
+    const newPattern = {
+        id: Date.now().toString(),
+        name: patternName,
         breatheIn: breatheIn,
         holdIn: holdIn,
         breatheOut: breatheOut,
@@ -318,14 +395,17 @@ function saveCustomPattern() {
         savedAt: new Date().toLocaleString()
     };
     
-    localStorage.setItem('breathingCustomPattern', JSON.stringify(customPattern));
+    // Add to saved patterns
+    savedPatterns.push(newPattern);
+    localStorage.setItem('breathingSavedPatterns', JSON.stringify(savedPatterns));
     
-    // Show saved actions and provide feedback
-    const savedActions = document.getElementById('savedActions');
-    savedActions.style.display = 'flex';
-    savedActions.querySelector('.load-btn').title = `Saved pattern: ${breatheIn}-${holdIn}-${breatheOut}-${holdOut} (${customPattern.savedAt})`;
+    // Clear the name input
+    document.getElementById('patternName').value = '';
     
-    // Temporary feedback
+    // Refresh the saved patterns display
+    displaySavedPatterns();
+    
+    // Provide feedback
     const saveBtn = document.querySelector('.save-btn');
     const originalText = saveBtn.textContent;
     saveBtn.textContent = 'Saved!';
@@ -336,13 +416,18 @@ function saveCustomPattern() {
     }, 1500);
 }
 
-// Load custom pattern from localStorage
-function loadCustomPattern() {
-    const savedPattern = localStorage.getItem('breathingCustomPattern');
+// Get all saved patterns from localStorage
+function getSavedPatterns() {
+    const patterns = localStorage.getItem('breathingSavedPatterns');
+    return patterns ? JSON.parse(patterns) : [];
+}
+
+// Load a specific saved pattern
+function loadSavedPattern(patternId) {
+    const savedPatterns = getSavedPatterns();
+    const pattern = savedPatterns.find(p => p.id === patternId);
     
-    if (savedPattern) {
-        const pattern = JSON.parse(savedPattern);
-        
+    if (pattern) {
         // Set slider values
         document.getElementById('breatheInSlider').value = pattern.breatheIn;
         document.getElementById('holdInSlider').value = pattern.holdIn;
@@ -352,70 +437,158 @@ function loadCustomPattern() {
         // Update the display and pattern
         updateCustom();
         
-        // Provide feedback
-        const loadBtn = document.querySelector('.load-btn');
-        const originalText = loadBtn.textContent;
-        loadBtn.textContent = 'Loaded!';
-        loadBtn.style.background = '#3b82f6';
-        setTimeout(() => {
-            loadBtn.textContent = originalText;
-            loadBtn.style.background = '';
-        }, 1500);
+        // Set the pattern name in the input for easy editing
+        document.getElementById('patternName').value = pattern.name;
+        
+        // Provide visual feedback that pattern is loaded
+        const loadButtons = document.querySelectorAll('.load-pattern-btn');
+        loadButtons.forEach(btn => {
+            if (btn.onclick.toString().includes(patternId)) {
+                const originalText = btn.textContent;
+                btn.textContent = 'Loaded!';
+                btn.style.background = '#10b981';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '';
+                }, 2000);
+            }
+        });
     }
 }
 
-// Clear saved pattern
-function clearCustomPattern() {
-    localStorage.removeItem('breathingCustomPattern');
-    document.getElementById('savedActions').style.display = 'none';
+// Delete a saved pattern
+function deleteSavedPattern(patternId) {
+    let savedPatterns = getSavedPatterns();
     
-    // Provide feedback
-    const saveBtn = document.querySelector('.save-btn');
-    const originalText = saveBtn.textContent;
-    saveBtn.textContent = 'Pattern Cleared';
-    saveBtn.style.background = '#ef4444';
-    setTimeout(() => {
-        saveBtn.textContent = originalText;
-        saveBtn.style.background = '';
-    }, 1500);
+    // Handle deletion by name (for overwrites) or by ID
+    if (typeof patternId === 'string' && !savedPatterns.find(p => p.id === patternId)) {
+        // Delete by name
+        savedPatterns = savedPatterns.filter(p => p.name.toLowerCase() !== patternId.toLowerCase());
+    } else {
+        // Delete by ID
+        savedPatterns = savedPatterns.filter(p => p.id !== patternId);
+    }
+    
+    localStorage.setItem('breathingSavedPatterns', JSON.stringify(savedPatterns));
+    displaySavedPatterns();
 }
 
-// Check for saved pattern on page load
+// Display saved patterns in the UI
+function displaySavedPatterns() {
+    const savedPatterns = getSavedPatterns();
+    const container = document.getElementById('savedPatternsList');
+    
+    if (savedPatterns.length === 0) {
+        container.innerHTML = '<div class="no-saved-patterns">No saved patterns yet</div>';
+        return;
+    }
+    
+    container.innerHTML = savedPatterns.map(pattern => `
+        <div class="saved-pattern-item">
+            <div class="saved-pattern-name">${pattern.name}</div>
+            <div class="saved-pattern-details">${pattern.breatheIn}-${pattern.holdIn}-${pattern.breatheOut}-${pattern.holdOut}</div>
+            <div class="saved-pattern-actions">
+                <button class="load-pattern-btn" onclick="loadSavedPattern('${pattern.id}')" title="Load this pattern">Load</button>
+                <button class="delete-pattern-btn" onclick="confirmDeletePattern('${pattern.id}', '${pattern.name}')" title="Delete this pattern">×</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Confirm pattern deletion
+function confirmDeletePattern(patternId, patternName) {
+    if (confirm(`Are you sure you want to delete the pattern "${patternName}"?`)) {
+        deleteSavedPattern(patternId);
+    }
+}
+
+// Check for saved patterns on page load and initialize display
 function checkForSavedPattern() {
-    const savedPattern = localStorage.getItem('breathingCustomPattern');
-    if (savedPattern) {
-        const pattern = JSON.parse(savedPattern);
-        const savedActions = document.getElementById('savedActions');
-        savedActions.style.display = 'flex';
-        savedActions.querySelector('.load-btn').title = `Saved pattern: ${pattern.breatheIn}-${pattern.holdIn}-${pattern.breatheOut}-${pattern.holdOut} (${pattern.savedAt})`;
+    // Display any existing saved patterns
+    displaySavedPatterns();
+    
+    // Migrate old single custom pattern to new system if it exists
+    const oldPattern = localStorage.getItem('breathingCustomPattern');
+    if (oldPattern) {
+        try {
+            const pattern = JSON.parse(oldPattern);
+            const savedPatterns = getSavedPatterns();
+            
+            // Only migrate if no patterns exist yet
+            if (savedPatterns.length === 0) {
+                const migratedPattern = {
+                    id: Date.now().toString(),
+                    name: 'Migrated Pattern',
+                    breatheIn: pattern.breatheIn,
+                    holdIn: pattern.holdIn,
+                    breatheOut: pattern.breatheOut,
+                    holdOut: pattern.holdOut,
+                    savedAt: pattern.savedAt || new Date().toLocaleString()
+                };
+                
+                savedPatterns.push(migratedPattern);
+                localStorage.setItem('breathingSavedPatterns', JSON.stringify(savedPatterns));
+                displaySavedPatterns();
+            }
+            
+            // Clean up old storage
+            localStorage.removeItem('breathingCustomPattern');
+        } catch (e) {
+            console.warn('Failed to migrate old custom pattern:', e);
+        }
     }
 }
 
 // Close custom controls
 function closeCustomControls() {
-    // Hide the custom controls
+    // Hide the custom controls dialog
     document.getElementById('customControls').style.display = 'none';
     
-    // Remove active state from custom button and set box preset as active
+    // Keep the custom pattern active - don't switch back to box breathing
+    // The custom button should remain highlighted to show custom pattern is active
     document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelector('.preset-btn[onclick="setPreset(\'box\')"]').classList.add('active');
+    document.querySelector('.preset-btn[onclick="setPreset(\'custom\')"]').classList.add('active');
     
-    // Switch back to box breathing pattern
-    setPreset('box');
-}
-
-// Audio context initialization
-function initAudio() {
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    // Make sure the custom pattern is applied (in case user made changes)
+    if (currentPattern === 'custom') {
+        updateCustom();
     }
 }
 
+// Audio context initialization with mobile support
+function initAudio() {
+    if (!audioContext) {
+        try {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (error) {
+            console.warn('AudioContext not supported:', error);
+            return false;
+        }
+    }
+    
+    // Resume audio context if it's suspended (required for mobile browsers)
+    if (audioContext.state === 'suspended') {
+        return audioContext.resume().then(() => {
+            console.log('AudioContext resumed successfully');
+            return true;
+        }).catch(error => {
+            console.warn('Failed to resume AudioContext:', error);
+            return false;
+        });
+    }
+    
+    return Promise.resolve(true);
+}
+
 // Generate ping sound
-function playBell(phaseIndex = 0) {
+async function playBell(phaseIndex = 0) {
     if (!pingEnabled) return;
     
-    initAudio();
+    const audioReady = await initAudio();
+    if (!audioReady || !audioContext) {
+        console.warn('AudioContext not ready, skipping bell sound');
+        return;
+    }
     
     const now = audioContext.currentTime;
     
@@ -461,15 +634,22 @@ function updatePhase() {
         return;
     }
     
-    // Set transition duration to match the phase duration for breathe in/out
-    box.style.transition = `all ${phase.duration}s cubic-bezier(0.4, 0, 0.2, 1)`;
-    
-    box.className = 'box ' + phase.class;
+    // Check if forest theme is active and disable transitions
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    if (currentTheme === 'sunset') {
+        box.style.transition = 'none';
+        box.className = 'box';
+    } else {
+        // Set transition duration to match the phase duration for breathe in/out
+        box.style.transition = `all ${phase.duration}s cubic-bezier(0.4, 0, 0.2, 1)`;
+        box.className = 'box ' + phase.class;
+    }
 }
 
 // Start breathing exercise
-function startBreathing() {
-    initAudio();
+async function startBreathing() {
+    // Ensure audio is initialized with user interaction
+    await handleUserInteraction();
     
     // Reset to beginning
     currentPhase = 0;
@@ -486,7 +666,7 @@ function startBreathing() {
     
     updatePhase(); // Set the visual state for the phase
     updateDisplay(); // Update text displays
-    playBell(currentPhase); // Initial ping
+    await playBell(currentPhase); // Initial ping
     
     intervalId = setInterval(() => {
         currentCount--;
@@ -536,4 +716,6 @@ document.addEventListener('visibilitychange', () => {
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
     checkForSavedPattern();
+    updateAudioStatus('Tap to enable');
+    loadTheme();
 });

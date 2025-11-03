@@ -9,11 +9,11 @@
 </head>
 <body>
     <div class="container">
-        <button class="settings-icon" onclick="toggleSettingsMenu()" aria-label="Audio Settings">
+        <button class="settings-icon" onclick="toggleSettingsMenu()" aria-label="Settings">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
             </svg>
-            <span class="settings-label">Audio Settings</span>
+            <span class="settings-label">Settings</span>
         </button>
 
         <button class="timer-icon" onclick="toggleTimerMenu()" aria-label="Session Timer">
@@ -36,6 +36,26 @@
                         <span class="toggle-slider"></span>
                         <span class="toggle-text">Transition Ping</span>
                     </label>
+                    <div class="audio-status" id="audioStatus" style="margin-top: 8px; font-size: 0.8em; opacity: 0.7;">
+                        Audio: <span id="audioStatusText">Tap to enable</span>
+                    </div>
+                </div>
+                <div class="theme-selection" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+                    <label class="selection-label">Theme:</label>
+                    <div class="theme-options">
+                        <button class="theme-btn active" onclick="setTheme('night-sky')" data-theme="night-sky">
+                            <span class="theme-preview night-sky-preview"></span>
+                            Night Sky
+                        </button>
+                        <button class="theme-btn" onclick="setTheme('lofi')" data-theme="lofi">
+                            <span class="theme-preview lofi-preview"></span>
+                            LoFi
+                        </button>
+                        <button class="theme-btn" onclick="setTheme('sunset')" data-theme="sunset">
+                            <span class="theme-preview sunset-preview"></span>
+                            Forest
+                        </button>
+                    </div>
                 </div>
                 <div class="music-selection" id="pingSelection" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
                     <label class="selection-label">Dynamic Ping System:</label>
@@ -83,7 +103,7 @@
         </div>
 
         <h1>Breathe with Me</h1>
-        <p class="subtitle">Breathing Exercise for Calm & Focus</p>
+        <p class="subtitle">Breathing Exercises to Soothe Anxiety</p>
         
         <div class="settings" id="settings">
             <h3>Breathing Pattern</h3>
@@ -99,7 +119,7 @@
             <div class="custom-controls" id="customControls" style="display: none;">
                 <div class="custom-controls-header">
                     <h4>Custom Pattern</h4>
-                    <button class="close-btn" onclick="closeCustomControls()">×</button>
+                    <button class="close-btn" onclick="closeCustomControls()" title="Close dialog (pattern will remain active)">×</button>
                 </div>
                 <div class="slider-group">
                     <label>Breathe In: <span id="breatheInValue">4</span>s</label>
@@ -118,10 +138,16 @@
                     <input type="range" id="holdOutSlider" min="0" max="10" value="4" oninput="updateCustom()">
                 </div>
                 <div class="custom-actions">
+                    <div class="pattern-name-group">
+                        <label for="patternName">Pattern Name:</label>
+                        <input type="text" id="patternName" placeholder="My Custom Pattern" maxlength="30">
+                    </div>
                     <button class="save-btn" onclick="saveCustomPattern()">Save Pattern</button>
-                    <div class="saved-actions" id="savedActions" style="display: none;">
-                        <button class="load-btn" onclick="loadCustomPattern()">Load Saved</button>
-                        <button class="clear-btn" onclick="clearCustomPattern()" title="Remove saved pattern">Clear</button>
+                    <div class="saved-patterns" id="savedPatterns">
+                        <h5>Saved Patterns:</h5>
+                        <div class="saved-patterns-list" id="savedPatternsList">
+                            <!-- Saved patterns will appear here -->
+                        </div>
                     </div>
                 </div>
             </div>
