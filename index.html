@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Breathe with Me - A calming breathing exercise app with visual guidance and customizable patterns">
+    <title>Breathe with Me - Calm Your Mind</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <button class="settings-icon" onclick="toggleSettingsMenu()" aria-label="Audio Settings">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <span class="settings-label">Audio Settings</span>
+        </button>
+
+        <div class="settings-menu" id="settingsMenu">
+            <div class="settings-menu-header">
+                <h3>Audio Settings</h3>
+                <button class="close-btn" onclick="toggleSettingsMenu()">×</button>
+            </div>
+            <div class="settings-menu-content">
+                <div class="toggle-group">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="pingToggle" checked onchange="togglePing()">
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-text">Transition Ping</span>
+                    </label>
+                </div>
+                <div class="music-selection" id="pingSelection" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+                    <label class="selection-label">Ping Style:</label>
+                    <select id="pingStyle" onchange="changePingStyle()">
+                        <option value="medium">Medium (A3 - 220Hz)</option>
+                        <option value="low">Low (A2 - 110Hz)</option>
+                        <option value="high">High (A4 - 440Hz)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <h1>Breathe with Me</h1>
+        <p class="subtitle">Breathing Exercise for Calm & Focus</p>
+        
+        <div class="settings" id="settings">
+            <h3>Breathing Pattern</h3>
+            <div class="preset-buttons">
+                <button class="preset-btn active" onclick="setPreset('box')">Box (4-4-4-4)</button>
+                <button class="preset-btn" onclick="setPreset('relaxing')">Relaxing (4-7-8)</button>
+                <button class="preset-btn" onclick="setPreset('energizing')">Energizing (4-4-6)</button>
+            </div>
+            <div class="custom-button-row">
+                <button class="preset-btn" onclick="setPreset('custom')">Custom</button>
+            </div>
+            
+            <div class="custom-controls" id="customControls" style="display: none;">
+                <div class="slider-group">
+                    <label>Breathe In: <span id="breatheInValue">4</span>s</label>
+                    <input type="range" id="breatheInSlider" min="2" max="10" value="4" oninput="updateCustom()">
+                </div>
+                <div class="slider-group">
+                    <label>Hold (After In): <span id="holdInValue">4</span>s</label>
+                    <input type="range" id="holdInSlider" min="0" max="10" value="4" oninput="updateCustom()">
+                </div>
+                <div class="slider-group">
+                    <label>Breathe Out: <span id="breatheOutValue">4</span>s</label>
+                    <input type="range" id="breatheOutSlider" min="2" max="10" value="4" oninput="updateCustom()">
+                </div>
+                <div class="slider-group">
+                    <label>Hold (After Out): <span id="holdOutValue">4</span>s</label>
+                    <input type="range" id="holdOutSlider" min="0" max="10" value="4" oninput="updateCustom()">
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="start-btn" id="startBtn" onclick="startBreathing()">Start</button>
+                <button class="stop-btn" id="stopBtn" onclick="stopBreathing()" disabled>Stop</button>
+            </div>
+        </div>
+        
+        <div class="instruction" id="instruction">Press Start to Begin</div>
+        <div class="counter" id="counter">4</div>
+        
+        <div class="breathing-box">
+            <div class="box" id="breathingBox"></div>
+        </div>
+        
+        <div class="info">
+            <p>Choose from preset patterns or create your own custom breathing rhythm. Toggle the transition ping sound to customize your experience. Follow the visual cue and listen for the gentle ping to guide your breathing.</p>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
