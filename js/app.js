@@ -161,8 +161,24 @@ function updateDisplay() {
     const phase = phases[currentPhase];
     document.getElementById('instruction').textContent = phase.name;
     document.getElementById('counter').textContent = currentCount;
-    
+}
+
+function updatePhase() {
+    const phase = phases[currentPhase];
     const box = document.getElementById('breathingBox');
+    
+    // For hold phases, don't change the class - just maintain current size
+    if (phase.class === 'hold') {
+        // Remove transition temporarily to prevent any movement
+        box.style.transition = 'none';
+        // Force a reflow to apply the no-transition immediately
+        box.offsetHeight;
+        return;
+    }
+    
+    // Set transition duration to match the phase duration for breathe in/out
+    box.style.transition = `all ${phase.duration}s cubic-bezier(0.4, 0, 0.2, 1)`;
+    
     box.className = 'box ' + phase.class;
 }
 
@@ -183,7 +199,8 @@ function startBreathing() {
     document.getElementById('startBtn').disabled = true;
     document.getElementById('stopBtn').disabled = false;
     
-    updateDisplay();
+    updatePhase(); // Set the visual state for the phase
+    updateDisplay(); // Update text displays
     playBell(); // Initial ping
     
     intervalId = setInterval(() => {
@@ -199,10 +216,11 @@ function startBreathing() {
             }
             
             currentCount = phases[currentPhase].duration;
+            updatePhase(); // Update the circle animation for new phase
             playBell(); // Ping at phase transition
         }
         
-        updateDisplay();
+        updateDisplay(); // Only update counter text
     }, 1000);
 }
 
@@ -219,6 +237,7 @@ function stopBreathing() {
     document.getElementById('counter').textContent = phases[0].duration;
     
     const box = document.getElementById('breathingBox');
+    box.style.transition = 'all 1s cubic-bezier(0.4, 0, 0.2, 1)';
     box.className = 'box';
 }
 

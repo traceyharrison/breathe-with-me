@@ -470,7 +470,7 @@ h1 {
     border: none;
     border-radius: 50%;
     position: absolute;
-    transition: all 4s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Transition duration is set dynamically via JavaScript */
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
     filter: blur(8px);

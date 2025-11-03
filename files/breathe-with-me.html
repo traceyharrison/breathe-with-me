@@ -488,7 +488,7 @@
             border: none;
             border-radius: 50%;
             position: absolute;
-            transition: all 4s cubic-bezier(0.4, 0, 0.2, 1);
+            /* Transition duration is set dynamically via JavaScript */
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
             filter: blur(8px);
@@ -949,8 +949,24 @@
             const phase = phases[currentPhase];
             document.getElementById('instruction').textContent = phase.name;
             document.getElementById('counter').textContent = currentCount;
-            
+        }
+
+        function updatePhase() {
+            const phase = phases[currentPhase];
             const box = document.getElementById('breathingBox');
+            
+            // For hold phases, don't change the class - just maintain current size
+            if (phase.class === 'hold') {
+                // Remove transition temporarily to prevent any movement
+                box.style.transition = 'none';
+                // Force a reflow to apply the no-transition immediately
+                box.offsetHeight;
+                return;
+            }
+            
+            // Set transition duration to match the phase duration for breathe in/out
+            box.style.transition = `all ${phase.duration}s cubic-bezier(0.4, 0, 0.2, 1)`;
+            
             box.className = 'box ' + phase.class;
         }
 
@@ -970,7 +986,8 @@
             document.getElementById('startBtn').disabled = true;
             document.getElementById('stopBtn').disabled = false;
             
-            updateDisplay();
+            updatePhase(); // Set the visual state for the phase
+            updateDisplay(); // Update text displays
             playBell(); // Initial ping
             
             intervalId = setInterval(() => {
@@ -986,10 +1003,11 @@
                     }
                     
                     currentCount = phases[currentPhase].duration;
+                    updatePhase(); // Update the circle animation for new phase
                     playBell(); // Ping at phase transition
                 }
                 
-                updateDisplay();
+                updateDisplay(); // Only update counter text
             }, 1000);
         }
 
@@ -1005,6 +1023,7 @@
             document.getElementById('counter').textContent = phases[0].duration;
             
             const box = document.getElementById('breathingBox');
+            box.style.transition = 'all 1s cubic-bezier(0.4, 0, 0.2, 1)';
             box.className = 'box';
             
             // Stop music if it was playing
