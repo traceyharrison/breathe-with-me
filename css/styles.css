@@ -1051,10 +1051,10 @@ h1 {
 
 /* Forest container styling */
 [data-theme="sunset"] .container {
-    background: rgba(13, 27, 13, 0.3);
-    border-radius: 20px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(74, 124, 89, 0.2);
+    background: transparent;
+    border-radius: 0;
+    backdrop-filter: none;
+    border: none;
 }
 
 [data-theme="sunset"] .settings-menu,
