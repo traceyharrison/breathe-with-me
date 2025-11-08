@@ -7,6 +7,12 @@ let currentPattern = 'box';
 let pingEnabled = true;
 let pingStyle = 'medium';
 
+// Music variables
+let backgroundMusic = null;
+let musicEnabled = false;
+let currentMusicTrack = 'unexplored-moon';
+let musicVolume = 0.3;
+
 // Timer variables
 let timerIntervalId = null;
 let timerDuration = 0; // in seconds
@@ -62,6 +68,11 @@ async function handleUserInteraction() {
             updateAudioStatus('Not supported');
         }
     }
+    
+    // Start background music if enabled (requires user interaction)
+    if (musicEnabled && !backgroundMusic) {
+        startBackgroundMusic();
+    }
 }
 
 function updateAudioStatus(status) {
@@ -100,7 +111,424 @@ function togglePing() {
     pingEnabled = document.getElementById('pingToggle').checked;
 }
 
+// Ping customization functions
+function updatePingFrequency(pingType, sliderId, valueId) {
+    const slider = document.getElementById(sliderId);
+    const valueSpan = document.getElementById(valueId);
+    const frequency = parseInt(slider.value);
+    
+    valueSpan.textContent = frequency;
+    pingConfigs[pingType].frequency = frequency;
+    savePingSettings();
+}
 
+function updatePingVolume(pingType, sliderId, valueId) {
+    const slider = document.getElementById(sliderId);
+    const valueSpan = document.getElementById(valueId);
+    const volume = parseInt(slider.value) / 100; // Convert percentage to decimal
+    
+    valueSpan.textContent = parseInt(slider.value);
+    pingConfigs[pingType].volume = volume;
+    savePingSettings();
+    
+    // iOS-specific: Add haptic feedback if available
+    if (navigator.vibrate && isIOSDevice()) {
+        navigator.vibrate(5);
+    }
+}
+
+function testPing(pingType) {
+    if (!audioContext) {
+        initAudioContext();
+        return;
+    }
+    
+    const config = pingConfigs[pingType];
+    if (!config) return;
+    
+    try {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(config.frequency, audioContext.currentTime);
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(config.volume, audioContext.currentTime + 0.05);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + config.duration);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + config.duration);
+    } catch (error) {
+        console.warn('Failed to play test ping:', error);
+    }
+}
+
+function setPingPreset(presetName) {
+    let presets = {};
+    
+    switch(presetName) {
+        case 'musical':
+            presets = {
+                'low': { frequency: 110, volume: 0.15, duration: 1.5 },     // A2
+                'medium': { frequency: 220, volume: 0.12, duration: 1.2 },  // A3
+                'high': { frequency: 440, volume: 0.08, duration: 1.0 }     // A4
+            };
+            break;
+        case 'gentle':
+            presets = {
+                'low': { frequency: 87, volume: 0.18, duration: 1.8 },      // F2 - Soft and calming
+                'medium': { frequency: 174, volume: 0.15, duration: 1.5 },  // F3 - Warm mid tone
+                'high': { frequency: 349, volume: 0.10, duration: 1.2 }     // F4 - Gentle higher tone
+            };
+            break;
+        case 'bright':
+            presets = {
+                'low': { frequency: 131, volume: 0.12, duration: 1.2 },     // C3 - Clear and crisp
+                'medium': { frequency: 262, volume: 0.10, duration: 1.0 },  // C4 - Bright mid tone
+                'high': { frequency: 523, volume: 0.06, duration: 0.8 }     // C5 - Crystal clear high
+            };
+            break;
+        case 'custom':
+        default:
+            // Reset to saved custom settings or defaults
+            loadPingSettings();
+            return;
+    }
+    
+    // Apply preset
+    Object.keys(presets).forEach(type => {
+        pingConfigs[type] = { ...presets[type] };
+    });
+    
+    // Update UI sliders to match preset
+    updatePingUI();
+    savePingSettings();
+}
+
+function updatePingUI() {
+    // Update Breathe In controls
+    const breatheInFreq = document.getElementById('breatheInFreq');
+    const breatheInFreqValue = document.getElementById('breatheInFreqValue');
+    const breatheInVol = document.getElementById('breatheInVol');
+    const breatheInVolValue = document.getElementById('breatheInVolValue');
+    
+    if (breatheInFreq) {
+        breatheInFreq.value = pingConfigs.low.frequency;
+        breatheInFreqValue.textContent = pingConfigs.low.frequency;
+        breatheInVol.value = Math.round(pingConfigs.low.volume * 100);
+        breatheInVolValue.textContent = Math.round(pingConfigs.low.volume * 100);
+    }
+    
+    // Update Hold controls
+    const holdFreq = document.getElementById('holdFreq');
+    const holdFreqValue = document.getElementById('holdFreqValue');
+    const holdVol = document.getElementById('holdVol');
+    const holdVolValue = document.getElementById('holdVolValue');
+    
+    if (holdFreq) {
+        holdFreq.value = pingConfigs.medium.frequency;
+        holdFreqValue.textContent = pingConfigs.medium.frequency;
+        holdVol.value = Math.round(pingConfigs.medium.volume * 100);
+        holdVolValue.textContent = Math.round(pingConfigs.medium.volume * 100);
+    }
+    
+    // Update Breathe Out controls
+    const breatheOutFreq = document.getElementById('breatheOutFreq');
+    const breatheOutFreqValue = document.getElementById('breatheOutFreqValue');
+    const breatheOutVol = document.getElementById('breatheOutVol');
+    const breatheOutVolValue = document.getElementById('breatheOutVolValue');
+    
+    if (breatheOutFreq) {
+        breatheOutFreq.value = pingConfigs.high.frequency;
+        breatheOutFreqValue.textContent = pingConfigs.high.frequency;
+        breatheOutVol.value = Math.round(pingConfigs.high.volume * 100);
+        breatheOutVolValue.textContent = Math.round(pingConfigs.high.volume * 100);
+    }
+}
+
+function savePingSettings() {
+    localStorage.setItem('pingConfigs', JSON.stringify(pingConfigs));
+}
+
+function loadPingSettings() {
+    const saved = localStorage.getItem('pingConfigs');
+    if (saved) {
+        try {
+            const savedConfigs = JSON.parse(saved);
+            Object.keys(savedConfigs).forEach(type => {
+                if (pingConfigs[type]) {
+                    pingConfigs[type] = { ...savedConfigs[type] };
+                }
+            });
+            updatePingUI();
+        } catch (error) {
+            console.warn('Failed to load ping settings:', error);
+        }
+    }
+}
+
+// Comprehensive Settings Management
+function saveAllSettings() {
+    try {
+        const allSettings = {
+            version: "1.0",
+            timestamp: new Date().toISOString(),
+            settings: {
+                // Audio Settings
+                pingEnabled: pingEnabled,
+                pingConfigs: pingConfigs,
+                
+                // Theme Settings
+                theme: document.documentElement.getAttribute('data-theme') || 'night-sky',
+                
+                // Music Settings
+                musicEnabled: musicEnabled,
+                currentMusicTrack: currentMusicTrack,
+                musicVolume: musicVolume,
+                
+                // Breathing Patterns (get current active pattern and all saved patterns)
+                currentPattern: {
+                    breatheIn: parseInt(document.getElementById('breatheInSlider')?.value || 4),
+                    holdIn: parseInt(document.getElementById('holdInSlider')?.value || 4),
+                    breatheOut: parseInt(document.getElementById('breatheOutSlider')?.value || 4),
+                    holdOut: parseInt(document.getElementById('holdOutSlider')?.value || 4)
+                },
+                savedPatterns: JSON.parse(localStorage.getItem('breathingSavedPatterns') || '[]')
+            }
+        };
+        
+        // Save to localStorage
+        localStorage.setItem('breathingAppAllSettings', JSON.stringify(allSettings));
+        
+        // Show success message
+        showSettingsStatus('All settings saved successfully!', 'success');
+        console.log('All settings saved:', allSettings);
+        
+    } catch (error) {
+        console.error('Failed to save settings:', error);
+        showSettingsStatus('Error saving settings', 'error');
+    }
+}
+
+function exportSettings() {
+    try {
+        saveAllSettings(); // Ensure current settings are saved first
+        
+        const allSettings = JSON.parse(localStorage.getItem('breathingAppAllSettings') || '{}');
+        
+        // Create downloadable file
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allSettings, null, 2));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", `breathing_exercise_settings_${new Date().toISOString().split('T')[0]}.json`);
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+        
+        showSettingsStatus('Settings exported successfully!', 'success');
+        
+    } catch (error) {
+        console.error('Failed to export settings:', error);
+        showSettingsStatus('Error exporting settings', 'error');
+    }
+}
+
+function importSettings(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const importedSettings = JSON.parse(e.target.result);
+            
+            if (!importedSettings.settings) {
+                throw new Error('Invalid settings file format');
+            }
+            
+            // Apply imported settings
+            applyImportedSettings(importedSettings.settings);
+            
+            showSettingsStatus('Settings imported successfully!', 'success');
+            console.log('Settings imported:', importedSettings);
+            
+        } catch (error) {
+            console.error('Failed to import settings:', error);
+            showSettingsStatus('Error importing settings - invalid file', 'error');
+        }
+    };
+    reader.readAsText(file);
+    
+    // Reset file input
+    event.target.value = '';
+}
+
+function applyImportedSettings(settings) {
+    try {
+        // Apply ping settings
+        if (settings.pingEnabled !== undefined) {
+            pingEnabled = settings.pingEnabled;
+            document.getElementById('pingToggle').checked = pingEnabled;
+        }
+        
+        if (settings.pingConfigs) {
+            Object.keys(settings.pingConfigs).forEach(type => {
+                if (pingConfigs[type]) {
+                    pingConfigs[type] = { ...settings.pingConfigs[type] };
+                }
+            });
+            updatePingUI();
+            savePingSettings();
+        }
+        
+        // Apply theme
+        if (settings.theme) {
+            setTheme(settings.theme);
+        }
+        
+        // Apply music settings
+        if (settings.musicEnabled !== undefined) {
+            musicEnabled = settings.musicEnabled;
+            document.getElementById('musicToggle').checked = musicEnabled;
+        }
+        
+        if (settings.currentMusicTrack) {
+            currentMusicTrack = settings.currentMusicTrack;
+            document.getElementById('musicSelect').value = currentMusicTrack;
+        }
+        
+        if (settings.musicVolume !== undefined) {
+            musicVolume = settings.musicVolume;
+            document.getElementById('musicVolume').value = musicVolume;
+            document.getElementById('volumeValue').textContent = musicVolume + '%';
+            if (backgroundMusic) {
+                backgroundMusic.volume = musicVolume / 100;
+            }
+        }
+        
+        // Apply breathing pattern
+        if (settings.currentPattern) {
+            const pattern = settings.currentPattern;
+            document.getElementById('breatheInSlider').value = pattern.breatheIn;
+            document.getElementById('holdInSlider').value = pattern.holdIn;
+            document.getElementById('breatheOutSlider').value = pattern.breatheOut;
+            document.getElementById('holdOutSlider').value = pattern.holdOut;
+            updateCustom();
+        }
+        
+        // Apply saved patterns
+        if (settings.savedPatterns && Array.isArray(settings.savedPatterns)) {
+            localStorage.setItem('breathingSavedPatterns', JSON.stringify(settings.savedPatterns));
+            checkForSavedPattern(); // Refresh the saved patterns display
+        }
+        
+        // Save all music preferences
+        saveMusicPreferences();
+        
+    } catch (error) {
+        console.error('Error applying imported settings:', error);
+        throw error;
+    }
+}
+
+function resetAllSettings() {
+    if (!confirm('Are you sure you want to reset ALL settings to default? This cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        // Clear all localStorage
+        const keysToRemove = [
+            'breathingAppAllSettings',
+            'pingConfigs',
+            'breathingAppTheme',
+            'breathingAppMusicEnabled',
+            'breathingAppMusicTrack',
+            'breathingAppMusicVolume',
+            'breathingSavedPatterns'
+        ];
+        
+        keysToRemove.forEach(key => {
+            localStorage.removeItem(key);
+        });
+        
+        // Reset to defaults
+        pingEnabled = true;
+        
+        // Reset ping configs to defaults
+        pingConfigs.low = { frequency: 110, volume: 0.15, duration: 1.5 };
+        pingConfigs.medium = { frequency: 220, volume: 0.12, duration: 1.2 };
+        pingConfigs.high = { frequency: 440, volume: 0.08, duration: 1.0 };
+        
+        // Reset theme
+        setTheme('night-sky');
+        
+        // Reset music
+        musicEnabled = false;
+        currentMusicTrack = 'unexplored-moon';
+        musicVolume = 30;
+        
+        // Reset UI elements
+        document.getElementById('pingToggle').checked = true;
+        document.getElementById('musicToggle').checked = false;
+        document.getElementById('musicSelect').value = 'unexplored-moon';
+        document.getElementById('musicVolume').value = 30;
+        document.getElementById('volumeValue').textContent = '30%';
+        
+        // Reset breathing pattern to Box (4-4-4-4)
+        document.getElementById('breatheInSlider').value = 4;
+        document.getElementById('holdInSlider').value = 4;
+        document.getElementById('breatheOutSlider').value = 4;
+        document.getElementById('holdOutSlider').value = 4;
+        updateCustom();
+        setPreset('box');
+        
+        // Update UI
+        updatePingUI();
+        checkForSavedPattern();
+        
+        showSettingsStatus('All settings reset to defaults', 'success');
+        console.log('All settings reset to defaults');
+        
+    } catch (error) {
+        console.error('Failed to reset settings:', error);
+        showSettingsStatus('Error resetting settings', 'error');
+    }
+}
+
+function showSettingsStatus(message, type = 'info') {
+    const statusElement = document.getElementById('settingsStatus');
+    if (!statusElement) return;
+    
+    statusElement.textContent = message;
+    statusElement.className = 'settings-status';
+    
+    if (type === 'success') {
+        statusElement.style.background = 'rgba(34, 197, 94, 0.1)';
+        statusElement.style.borderColor = 'rgba(34, 197, 94, 0.2)';
+        statusElement.style.color = '#22c55e';
+    } else if (type === 'error') {
+        statusElement.style.background = 'rgba(239, 68, 68, 0.1)';
+        statusElement.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+        statusElement.style.color = '#ef4444';
+    } else {
+        statusElement.style.background = 'rgba(59, 130, 246, 0.1)';
+        statusElement.style.borderColor = 'rgba(59, 130, 246, 0.2)';
+        statusElement.style.color = '#3b82f6';
+    }
+    
+    // Reset to default after 3 seconds
+    setTimeout(() => {
+        statusElement.textContent = 'Settings auto-save enabled';
+        statusElement.style.background = 'rgba(34, 197, 94, 0.1)';
+        statusElement.style.borderColor = 'rgba(34, 197, 94, 0.2)';
+        statusElement.style.color = '#22c55e';
+    }, 3000);
+}
 
 // Timer menu toggle
 function toggleTimerMenu() {
@@ -348,14 +776,248 @@ function setTheme(themeName) {
     // Apply theme to document
     document.documentElement.setAttribute('data-theme', themeName);
     
+    // Set default music for new theme
+    setDefaultMusicForTheme(themeName);
+    
+    // Restart music with new track if music is enabled
+    if (musicEnabled) {
+        startBackgroundMusic();
+    }
+    
     // Save theme preference
     localStorage.setItem('breathingAppTheme', themeName);
+    
+    // Auto-save all settings
+    autoSaveSettings();
 }
 
 // Load saved theme on startup
 function loadTheme() {
     const savedTheme = localStorage.getItem('breathingAppTheme') || 'night-sky';
     setTheme(savedTheme);
+    
+    // Set default music based on theme
+    setDefaultMusicForTheme(savedTheme);
+}
+
+// Set default music track based on theme
+function setDefaultMusicForTheme(themeName) {
+    const themeDefaults = {
+        'night-sky': 'unexplored-moon',
+        'sunset': 'dark-ambient', 
+        'lofi': 'way-home'
+    };
+    
+    const defaultTrack = themeDefaults[themeName] || 'unexplored-moon';
+    document.getElementById('musicSelect').value = defaultTrack;
+    currentMusicTrack = defaultTrack;
+}
+
+// Music control functions
+function toggleMusic() {
+    musicEnabled = document.getElementById('musicToggle').checked;
+    
+    // Update quick music button
+    updateQuickMusicButton();
+    
+    if (musicEnabled) {
+        startBackgroundMusic();
+    } else {
+        stopBackgroundMusic();
+    }
+    
+    // Save preference
+    localStorage.setItem('breathingAppMusicEnabled', musicEnabled);
+}
+
+function changeMusic() {
+    const selectedTrack = document.getElementById('musicSelect').value;
+    currentMusicTrack = selectedTrack;
+    
+    if (musicEnabled && backgroundMusic) {
+        stopBackgroundMusic();
+        startBackgroundMusic();
+    }
+    
+    // Save preference
+    localStorage.setItem('breathingAppMusicTrack', currentMusicTrack);
+}
+
+function adjustVolume() {
+    const volumeSlider = document.getElementById('musicVolume');
+    const volume = volumeSlider.value;
+    musicVolume = volume / 100;
+    document.getElementById('volumeValue').textContent = volume + '%';
+    
+    // iPhone-specific volume control fixes
+    if (backgroundMusic) {
+        try {
+            // Primary volume setting
+            backgroundMusic.volume = musicVolume;
+            
+            // iOS Safari backup - force volume update
+            if (isIOSDevice()) {
+                // Create a small delay to ensure volume is applied
+                setTimeout(() => {
+                    if (backgroundMusic && !backgroundMusic.paused) {
+                        backgroundMusic.volume = musicVolume;
+                        
+                        // Force a tiny pause/play to trigger volume update on iOS
+                        const currentTime = backgroundMusic.currentTime;
+                        backgroundMusic.pause();
+                        backgroundMusic.currentTime = currentTime;
+                        backgroundMusic.play().catch(e => console.warn('iOS volume adjust play failed:', e));
+                    }
+                }, 10);
+            }
+        } catch (error) {
+            console.warn('Failed to adjust volume:', error);
+        }
+    }
+    
+    // Save preference
+    localStorage.setItem('breathingAppMusicVolume', volume);
+}
+
+// Detect iOS devices
+function isIOSDevice() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+}
+
+// Enhanced volume adjustment for iOS compatibility
+function adjustVolumeWithTouch() {
+    adjustVolume();
+    
+    // iOS-specific: Add a small vibration feedback if supported
+    if (navigator.vibrate && isIOSDevice()) {
+        navigator.vibrate(10);
+    }
+}
+
+// iPhone volume diagnostics
+function checkVolumeSupport() {
+    const isIOS = isIOSDevice();
+    const hasAudio = !!backgroundMusic;
+    const audioContextState = audioContext ? audioContext.state : 'no context';
+    
+    console.log('iPhone Volume Diagnostic:', {
+        isIOSDevice: isIOS,
+        hasBackgroundMusic: hasAudio,
+        audioContextState: audioContextState,
+        currentVolume: musicVolume,
+        sliderValue: document.getElementById('musicVolume')?.value || 'not found',
+        audioVolume: backgroundMusic ? backgroundMusic.volume : 'no audio'
+    });
+    
+    // Show user-friendly diagnostic
+    if (isIOS && hasAudio) {
+        const actualVolume = backgroundMusic.volume;
+        const expectedVolume = musicVolume;
+        
+        if (Math.abs(actualVolume - expectedVolume) > 0.1) {
+            showSettingsStatus('iPhone volume control may be restricted by iOS. Try using device volume buttons.', 'info');
+        }
+    }
+    
+    return {
+        isIOS,
+        hasAudio,
+        volumeWorking: hasAudio ? Math.abs(backgroundMusic.volume - musicVolume) < 0.1 : false
+    };
+}
+
+function startBackgroundMusic() {
+    if (!musicEnabled) return;
+    
+    stopBackgroundMusic(); // Stop any existing music
+    
+    const musicFiles = {
+        'unexplored-moon': 'files/Unexplored Moon by @MiguelJohnson.mp3',
+        'dark-ambient': 'files/Dark Ambient Music (No Copyright).mp3',
+        'way-home': 'files/Way Home by @tokyowalker4038.mp3'
+    };
+    
+    const musicFile = musicFiles[currentMusicTrack];
+    if (!musicFile) return;
+    
+    backgroundMusic = new Audio(musicFile);
+    backgroundMusic.loop = true;
+    
+    // iOS-specific audio setup
+    if (isIOSDevice()) {
+        // Set volume multiple times for iOS
+        backgroundMusic.volume = musicVolume;
+        
+        // Add event listeners for iOS audio events
+        backgroundMusic.addEventListener('loadeddata', () => {
+            backgroundMusic.volume = musicVolume;
+        });
+        
+        backgroundMusic.addEventListener('canplay', () => {
+            backgroundMusic.volume = musicVolume;
+        });
+        
+        // iOS requires user interaction for volume changes
+        backgroundMusic.addEventListener('play', () => {
+            setTimeout(() => {
+                backgroundMusic.volume = musicVolume;
+            }, 100);
+        });
+    } else {
+        backgroundMusic.volume = musicVolume;
+    }
+    
+    backgroundMusic.play().then(() => {
+        // Successfully started playing
+        if (isIOSDevice()) {
+            // Force volume setting after play starts on iOS
+            setTimeout(() => {
+                backgroundMusic.volume = musicVolume;
+                checkVolumeSupport(); // Run diagnostic
+            }, 200);
+        }
+    }).catch(error => {
+        console.warn('Could not play background music:', error);
+        if (isIOSDevice()) {
+            showSettingsStatus('Tap anywhere to enable music on iPhone', 'info');
+        }
+    });
+}
+
+function stopBackgroundMusic() {
+    if (backgroundMusic) {
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+        backgroundMusic = null;
+    }
+}
+
+// Load music preferences
+function loadMusicPreferences() {
+    // Load music enabled state
+    const savedMusicEnabled = localStorage.getItem('breathingAppMusicEnabled');
+    if (savedMusicEnabled !== null) {
+        musicEnabled = savedMusicEnabled === 'true';
+        document.getElementById('musicToggle').checked = musicEnabled;
+    }
+    
+    // Load music track
+    const savedTrack = localStorage.getItem('breathingAppMusicTrack');
+    if (savedTrack) {
+        currentMusicTrack = savedTrack;
+        document.getElementById('musicSelect').value = currentMusicTrack;
+    }
+    
+    // Load volume
+    const savedVolume = localStorage.getItem('breathingAppMusicVolume');
+    if (savedVolume) {
+        document.getElementById('musicVolume').value = savedVolume;
+        musicVolume = savedVolume / 100;
+        document.getElementById('volumeValue').textContent = savedVolume + '%';
+    }
+    
+    // Update quick music button
+    updateQuickMusicButton();
 }
 
 // Save custom pattern with name to localStorage
@@ -634,16 +1296,10 @@ function updatePhase() {
         return;
     }
     
-    // Check if forest theme is active and disable transitions
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    if (currentTheme === 'sunset') {
-        box.style.transition = 'none';
-        box.className = 'box';
-    } else {
-        // Set transition duration to match the phase duration for breathe in/out
-        box.style.transition = `all ${phase.duration}s cubic-bezier(0.4, 0, 0.2, 1)`;
-        box.className = 'box ' + phase.class;
-    }
+    // Set transition duration to match the phase duration for breathe in/out
+    box.style.transition = `all ${phase.duration}s cubic-bezier(0.4, 0, 0.2, 1)`;
+    
+    box.className = 'box ' + phase.class;
 }
 
 // Start breathing exercise
@@ -713,9 +1369,82 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
+// Quick music toggle function
+function quickToggleMusic() {
+    // Toggle music state
+    musicEnabled = !musicEnabled;
+    
+    // Update both music toggles (settings and quick toggle)
+    document.getElementById('musicToggle').checked = musicEnabled;
+    document.getElementById('quickMusicToggle').classList.toggle('active', musicEnabled);
+    
+    // Update button text and icon
+    updateQuickMusicButton();
+    
+    // Start or stop music
+    if (musicEnabled) {
+        startBackgroundMusic();
+    } else {
+        stopBackgroundMusic();
+    }
+    
+    // Save preference
+    saveMusicPreferences();
+    autoSaveSettings();
+}
+
+function updateQuickMusicButton() {
+    const quickButton = document.getElementById('quickMusicToggle');
+    const musicIcon = quickButton.querySelector('.music-icon');
+    const musicOffIcon = quickButton.querySelector('.music-off-icon');
+    const statusText = document.getElementById('musicStatusText');
+    
+    if (musicEnabled) {
+        quickButton.classList.add('active');
+        musicIcon.style.display = 'block';
+        musicOffIcon.style.display = 'none';
+        statusText.textContent = 'Music On';
+    } else {
+        quickButton.classList.remove('active');
+        musicIcon.style.display = 'none';
+        musicOffIcon.style.display = 'block';
+        statusText.textContent = 'Music Off';
+    }
+}
+
+// Auto-save all settings whenever something changes
+function autoSaveSettings() {
+    setTimeout(() => {
+        saveAllSettings();
+    }, 500); // Debounce auto-save by 500ms
+}
+
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
     checkForSavedPattern();
     updateAudioStatus('Tap to enable');
     loadTheme();
+    loadMusicPreferences();
+    loadPingSettings();
+    
+    // Load all settings if they exist
+    const savedAllSettings = localStorage.getItem('breathingAppAllSettings');
+    if (savedAllSettings) {
+        try {
+            const settings = JSON.parse(savedAllSettings);
+            if (settings.settings) {
+                console.log('Loading comprehensive settings...');
+                // Settings are already loaded individually above, this just verifies completeness
+            }
+        } catch (error) {
+            console.warn('Failed to load comprehensive settings:', error);
+        }
+    }
+    
+    // Set up auto-save listeners (excluding rapid UI updates like slider drags)
+    document.addEventListener('change', (e) => {
+        if (e.target.matches('#pingToggle, #musicToggle, #musicSelect')) {
+            autoSaveSettings();
+        }
+    });
 });

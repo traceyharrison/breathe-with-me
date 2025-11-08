@@ -255,6 +255,7 @@ body::after {
     top: 84px;
     right: 24px;
     width: 320px;
+    max-height: calc(100vh - 120px);
     background: var(--panel-bg);
     backdrop-filter: blur(20px);
     border-radius: 16px;
@@ -265,6 +266,8 @@ body::after {
     pointer-events: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 9998;
+    display: flex;
+    flex-direction: column;
 }
 
 .settings-menu.active {
@@ -312,6 +315,27 @@ body::after {
 
 .settings-menu-content {
     padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(139, 92, 246, 0.3) transparent;
+}
+
+.settings-menu-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.settings-menu-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.settings-menu-content::-webkit-scrollbar-thumb {
+    background-color: rgba(139, 92, 246, 0.3);
+    border-radius: 3px;
+}
+
+.settings-menu-content::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(139, 92, 246, 0.5);
 }
 
 .toggle-group {
@@ -414,6 +438,388 @@ body::after {
     color: #a78bfa;
 }
 
+/* Music controls styling */
+.music-controls {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.music-controls input[type="checkbox"] {
+    margin-right: 8px;
+    transform: scale(1.1);
+}
+
+.music-volume {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.music-volume input[type="range"] {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.music-volume input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--accent-color, #8b5cf6);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.music-volume input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--accent-color, #8b5cf6);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+/* Ping controls styling */
+.ping-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ping-phase-control {
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ping-phase-control h5 {
+    margin: 0 0 8px 0;
+    font-size: 0.9em;
+    color: var(--accent-color, #8b5cf6);
+    font-weight: 600;
+}
+
+.ping-adjustment {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.ping-adjustment label {
+    font-size: 0.8em;
+    opacity: 0.9;
+}
+
+.ping-adjustment input[type="range"] {
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.ping-adjustment input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--accent-color, #8b5cf6);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.ping-adjustment input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--accent-color, #8b5cf6);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+.test-ping-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-color, #fff);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 4px;
+}
+
+.test-ping-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-color, #8b5cf6);
+}
+
+.ping-presets {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.preset-ping-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.preset-ping-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-color, #fff);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.75em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.preset-ping-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-color, #8b5cf6);
+}
+
+.preset-ping-btn:active {
+    transform: scale(0.98);
+}
+
+/* Settings Management Styles */
+.settings-management {
+    border-radius: 8px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.settings-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.settings-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: var(--text-color, #fff);
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    width: 100%;
+}
+
+.settings-action-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-color, #8b5cf6);
+    transform: translateY(-1px);
+}
+
+.settings-action-btn:active {
+    transform: translateY(0);
+}
+
+.settings-action-btn.save-all {
+    background: rgba(34, 197, 94, 0.1);
+    border-color: rgba(34, 197, 94, 0.3);
+    color: #22c55e;
+}
+
+.settings-action-btn.save-all:hover {
+    background: rgba(34, 197, 94, 0.2);
+    border-color: #22c55e;
+}
+
+.settings-action-btn.export {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #3b82f6;
+}
+
+.settings-action-btn.export:hover {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: #3b82f6;
+}
+
+.settings-action-btn.import {
+    background: rgba(168, 85, 247, 0.1);
+    border-color: rgba(168, 85, 247, 0.3);
+    color: #a855f7;
+}
+
+.settings-action-btn.import:hover {
+    background: rgba(168, 85, 247, 0.2);
+    border-color: #a855f7;
+}
+
+.settings-action-btn.reset {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+.settings-action-btn.reset:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+}
+
+.settings-action-btn svg {
+    flex-shrink: 0;
+}
+
+.settings-status {
+    padding: 6px 12px;
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    border-radius: 4px;
+    color: #22c55e;
+}
+
+.import-settings {
+    position: relative;
+}
+
+/* Quick Music Control Styles */
+.quick-music-control {
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+    margin-bottom: 8px;
+}
+
+.music-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    color: var(--text-color, #fff);
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.music-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-color, #8b5cf6);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+}
+
+.music-toggle-btn:active {
+    transform: translateY(0);
+}
+
+.music-toggle-btn.active {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: var(--accent-color, #8b5cf6);
+    color: var(--accent-color, #8b5cf6);
+}
+
+.music-toggle-btn.active:hover {
+    background: rgba(139, 92, 246, 0.25);
+}
+
+.music-icon,
+.music-off-icon {
+    flex-shrink: 0;
+}
+
+.music-status-text {
+    font-weight: 500;
+}
+
+/* Theme-specific music button styles */
+[data-theme="lofi"] .music-toggle-btn.active {
+    background: rgba(255, 0, 255, 0.15);
+    border-color: #ff00ff;
+    color: #ff00ff;
+    box-shadow: 0 0 8px rgba(255, 0, 255, 0.3);
+}
+
+[data-theme="lofi"] .music-toggle-btn.active:hover {
+    background: rgba(255, 0, 255, 0.25);
+}
+
+[data-theme="sunset"] .music-toggle-btn.active {
+    background: rgba(46, 125, 50, 0.15);
+    border-color: #2e7d32;
+    color: #4caf50;
+}
+
+[data-theme="sunset"] .music-toggle-btn.active:hover {
+    background: rgba(46, 125, 50, 0.25);
+}
+
+/* iOS/iPhone specific slider improvements */
+@supports (-webkit-touch-callout: none) {
+    /* iOS Safari specific styles */
+    input[type="range"] {
+        height: 30px !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        background: transparent !important;
+        cursor: pointer;
+    }
+    
+    input[type="range"]::-webkit-slider-track {
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        height: 24px !important;
+        width: 24px !important;
+        border-radius: 50%;
+        background: var(--accent-color, #8b5cf6);
+        cursor: pointer;
+        border: 2px solid #fff;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        margin-top: -10px;
+    }
+    
+    /* Larger touch target for iPhone */
+    .music-volume input[type="range"],
+    .ping-adjustment input[type="range"] {
+        padding: 8px 0;
+        touch-action: manipulation;
+    }
+    
+    /* iOS vibration feedback indicator */
+    .volume-feedback {
+        opacity: 1;
+        transition: opacity 0.1s ease;
+    }
+    
+    .volume-feedback.active {
+        opacity: 0.7;
+    }
+}
+
 /* Theme Selection Styles */
 .theme-selection {
     margin-top: 16px;
@@ -512,6 +918,7 @@ select option {
     top: 84px;
     left: 24px;
     width: 320px;
+    max-height: calc(100vh - 120px);
     background: rgba(10, 5, 32, 0.95);
     backdrop-filter: blur(20px);
     border-radius: 16px;
@@ -522,6 +929,8 @@ select option {
     pointer-events: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 9998;
+    display: flex;
+    flex-direction: column;
 }
 
 .timer-menu.active {
@@ -546,6 +955,27 @@ select option {
 
 .timer-menu-content {
     padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(59, 130, 246, 0.3) transparent;
+}
+
+.timer-menu-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.timer-menu-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.timer-menu-content::-webkit-scrollbar-thumb {
+    background-color: rgba(59, 130, 246, 0.3);
+    border-radius: 3px;
+}
+
+.timer-menu-content::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(59, 130, 246, 0.5);
 }
 
 .timer-status {
@@ -942,35 +1372,25 @@ h1 {
     box-shadow: 0 0 35px #ff00ff, 0 0 70px #00ffff, inset 0 0 35px rgba(255, 0, 255, 0.3);
 }
 
-/* Forest breathing box styling - Static, no animation */
+/* Forest breathing box styling - Smooth size changes, consistent colors */
 [data-theme="sunset"] .box {
     border: 3px solid #2d5a2d;
     box-shadow: 0 0 30px rgba(45, 90, 45, 0.7), 0 0 60px rgba(26, 74, 26, 0.5), inset 0 0 30px rgba(45, 90, 45, 0.3);
-    width: 300px !important;
-    height: 300px !important;
-    transition: none !important;
-    animation: none !important;
 }
 
 [data-theme="sunset"] .box.breathe-in {
     border-color: #2d5a2d;
-    box-shadow: 0 0 30px rgba(45, 90, 45, 0.7), 0 0 60px rgba(26, 74, 26, 0.5), inset 0 0 30px rgba(45, 90, 45, 0.3);
-    width: 300px !important;
-    height: 300px !important;
+    box-shadow: 0 0 35px rgba(45, 90, 45, 0.8), 0 0 70px rgba(26, 74, 26, 0.6), inset 0 0 35px rgba(45, 90, 45, 0.4);
 }
 
 [data-theme="sunset"] .box.hold {
     border-color: #2d5a2d;
-    box-shadow: 0 0 30px rgba(45, 90, 45, 0.7), 0 0 60px rgba(26, 74, 26, 0.5), inset 0 0 30px rgba(45, 90, 45, 0.3);
-    width: 300px !important;
-    height: 300px !important;
+    box-shadow: 0 0 40px rgba(45, 90, 45, 0.9), 0 0 80px rgba(26, 74, 26, 0.7), inset 0 0 40px rgba(45, 90, 45, 0.4);
 }
 
 [data-theme="sunset"] .box.breathe-out {
     border-color: #2d5a2d;
-    box-shadow: 0 0 30px rgba(45, 90, 45, 0.7), 0 0 60px rgba(26, 74, 26, 0.5), inset 0 0 30px rgba(45, 90, 45, 0.3);
-    width: 300px !important;
-    height: 300px !important;
+    box-shadow: 0 0 25px rgba(45, 90, 45, 0.6), 0 0 50px rgba(26, 74, 26, 0.4), inset 0 0 25px rgba(45, 90, 45, 0.3);
 }
 
 .session-timer-display {
@@ -1135,13 +1555,17 @@ h1 {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
-/* Disable all animations for forest theme */
-[data-theme="sunset"] * {
+/* Disable flashing animations for forest theme, allow breathing box */
+[data-theme="sunset"] *:not(.box) {
     animation: none !important;
-    transition: none !important;
 }
 
 [data-theme="sunset"] body::after {
+    animation: none !important;
+}
+
+/* Allow breathing box transitions only */
+[data-theme="sunset"] .box {
     animation: none !important;
 }
 

@@ -36,9 +36,6 @@
                         <span class="toggle-slider"></span>
                         <span class="toggle-text">Transition Ping</span>
                     </label>
-                    <div class="audio-status" id="audioStatus" style="margin-top: 8px; font-size: 0.8em; opacity: 0.7;">
-                        Audio: <span id="audioStatusText">Tap to enable</span>
-                    </div>
                 </div>
                 <div class="theme-selection" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
                     <label class="selection-label">Theme:</label>
@@ -57,12 +54,129 @@
                         </button>
                     </div>
                 </div>
+                <div class="music-selection" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+                    <label class="selection-label">Background Music:</label>
+                    <div class="music-controls">
+                        <input type="checkbox" id="musicToggle" onchange="toggleMusic()" style="margin-right: 8px;">
+                        <label for="musicToggle" style="font-size: 0.9em;">Enable Music</label>
+                    </div>
+                    <select id="musicSelect" onchange="changeMusic()" style="margin-top: 8px; width: 100%;">
+                        <option value="unexplored-moon">Unexplored Moon - by Miguel Johnson</option>
+                        <option value="dark-ambient">Dark Ambient - Forest Walk</option>
+                        <option value="way-home">Way Home - by TokyoWalker4038</option>
+                    </select>
+                    <div class="music-volume" style="margin-top: 8px;">
+                        <label style="font-size: 0.8em;">Volume:</label>
+                        <input type="range" id="musicVolume" min="0" max="100" value="30" 
+                               oninput="adjustVolume()" 
+                               onchange="adjustVolumeWithTouch()"
+                               ontouchend="adjustVolumeWithTouch()"
+                               style="width: 100%; margin-top: 4px;">
+                        <span id="volumeValue" style="font-size: 0.8em; opacity: 0.7;">30%</span>
+                    </div>
+                </div>
+                
                 <div class="music-selection" id="pingSelection" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
-                    <label class="selection-label">Dynamic Ping System:</label>
-                    <div class="ping-info">
-                        <div class="ping-phase">• Breathe In: <span class="ping-tone">Low tone</span> (A2 - 110Hz)</div>
-                        <div class="ping-phase">• Hold: <span class="ping-tone">Medium tone</span> (A3 - 220Hz)</div>
-                        <div class="ping-phase">• Breathe Out: <span class="ping-tone">High tone</span> (A4 - 440Hz)</div>
+                    <label class="selection-label">Ping Notes Customization:</label>
+                    <div class="ping-controls">
+                        <div class="ping-phase-control">
+                            <h5>Breathe In Phase</h5>
+                            <div class="ping-adjustment">
+                                <label>Frequency: <span id="breatheInFreqValue">110</span>Hz</label>
+                                <input type="range" id="breatheInFreq" min="80" max="600" value="110" oninput="updatePingFrequency('low', 'breatheInFreq', 'breatheInFreqValue')">
+                            </div>
+                            <div class="ping-adjustment">
+                                <label>Volume: <span id="breatheInVolValue">15</span>%</label>
+                                <input type="range" id="breatheInVol" min="3" max="30" value="15" 
+                                       oninput="updatePingVolume('low', 'breatheInVol', 'breatheInVolValue')"
+                                       onchange="updatePingVolume('low', 'breatheInVol', 'breatheInVolValue')"
+                                       ontouchend="updatePingVolume('low', 'breatheInVol', 'breatheInVolValue')">
+                            </div>
+                            <button class="test-ping-btn" onclick="testPing('low')">Test</button>
+                        </div>
+                        
+                        <div class="ping-phase-control">
+                            <h5>Hold Phase</h5>
+                            <div class="ping-adjustment">
+                                <label>Frequency: <span id="holdFreqValue">220</span>Hz</label>
+                                <input type="range" id="holdFreq" min="80" max="600" value="220" oninput="updatePingFrequency('medium', 'holdFreq', 'holdFreqValue')">
+                            </div>
+                            <div class="ping-adjustment">
+                                <label>Volume: <span id="holdVolValue">12</span>%</label>
+                                <input type="range" id="holdVol" min="3" max="30" value="12" 
+                                       oninput="updatePingVolume('medium', 'holdVol', 'holdVolValue')"
+                                       onchange="updatePingVolume('medium', 'holdVol', 'holdVolValue')"
+                                       ontouchend="updatePingVolume('medium', 'holdVol', 'holdVolValue')">
+                            </div>
+                            <button class="test-ping-btn" onclick="testPing('medium')">Test</button>
+                        </div>
+                        
+                        <div class="ping-phase-control">
+                            <h5>Breathe Out Phase</h5>
+                            <div class="ping-adjustment">
+                                <label>Frequency: <span id="breatheOutFreqValue">440</span>Hz</label>
+                                <input type="range" id="breatheOutFreq" min="80" max="600" value="440" oninput="updatePingFrequency('high', 'breatheOutFreq', 'breatheOutFreqValue')">
+                            </div>
+                            <div class="ping-adjustment">
+                                <label>Volume: <span id="breatheOutVolValue">8</span>%</label>
+                                <input type="range" id="breatheOutVol" min="3" max="30" value="8" 
+                                       oninput="updatePingVolume('high', 'breatheOutVol', 'breatheOutVolValue')"
+                                       onchange="updatePingVolume('high', 'breatheOutVol', 'breatheOutVolValue')"
+                                       ontouchend="updatePingVolume('high', 'breatheOutVol', 'breatheOutVolValue')">
+                            </div>
+                            <button class="test-ping-btn" onclick="testPing('high')">Test</button>
+                        </div>
+                        
+                        <div class="ping-presets">
+                            <label class="selection-label">Presets:</label>
+                            <div class="preset-ping-buttons">
+                                <button class="preset-ping-btn" onclick="setPingPreset('musical')">Musical (A2-A3-A4)</button>
+                                <button class="preset-ping-btn" onclick="setPingPreset('gentle')">Gentle</button>
+                                <button class="preset-ping-btn" onclick="setPingPreset('bright')">Bright</button>
+                                <button class="preset-ping-btn" onclick="setPingPreset('custom')">Reset to Custom</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-management" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+                    <label class="selection-label">Settings Management:</label>
+                    <div class="settings-actions">
+                        <button class="settings-action-btn save-all" onclick="saveAllSettings()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            Save All Settings
+                        </button>
+                        <button class="settings-action-btn export" onclick="exportSettings()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7,10 12,15 17,10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Export Settings
+                        </button>
+                        <div class="import-settings">
+                            <input type="file" id="settingsFileInput" accept=".json" style="display: none;" onchange="importSettings(event)">
+                            <button class="settings-action-btn import" onclick="document.getElementById('settingsFileInput').click()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17,8 12,3 7,8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                Import Settings
+                            </button>
+                        </div>
+                        <button class="settings-action-btn reset" onclick="resetAllSettings()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="1,4 1,10 7,10"></polyline>
+                                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                            </svg>
+                            Reset to Defaults
+                        </button>
+                    </div>
+                    <div class="settings-status" id="settingsStatus" style="margin-top: 8px; font-size: 0.8em; opacity: 0.7; text-align: center;">
+                        Settings auto-save enabled
                     </div>
                 </div>
             </div>
@@ -155,6 +269,23 @@
             <div class="controls">
                 <button class="start-btn" id="startBtn" onclick="startBreathing()">Start</button>
                 <button class="stop-btn" id="stopBtn" onclick="stopBreathing()" disabled>Stop</button>
+            </div>
+            
+            <div class="quick-music-control">
+                <button class="music-toggle-btn" id="quickMusicToggle" onclick="quickToggleMusic()" title="Toggle background music">
+                    <svg class="music-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18V5l12-2v13"></path>
+                        <circle cx="6" cy="18" r="3"></circle>
+                        <circle cx="18" cy="16" r="3"></circle>
+                    </svg>
+                    <svg class="music-off-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                        <path d="M2 2l20 20"></path>
+                        <path d="M9 18V8l7-2v8"></path>
+                        <circle cx="6" cy="18" r="3"></circle>
+                        <circle cx="16" cy="16" r="3"></circle>
+                    </svg>
+                    <span class="music-status-text" id="musicStatusText">Music Off</span>
+                </button>
             </div>
         </div>
         
