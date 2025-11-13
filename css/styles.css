@@ -250,6 +250,37 @@ body::after {
     box-shadow: 0 6px 30px rgba(59, 130, 246, 0.4);
 }
 
+.fidget-games-icon {
+    position: fixed;
+    top: 90px;
+    right: 24px;
+    padding: 12px 20px;
+    border-radius: 50px;
+    background: rgba(139, 69, 19, 0.15);
+    border: 1px solid rgba(139, 69, 19, 0.3);
+    backdrop-filter: blur(20px);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+    z-index: 9999;
+    color: white;
+    box-shadow: 0 4px 20px rgba(139, 69, 19, 0.2);
+}
+
+.fidget-games-icon:hover {
+    background: rgba(139, 69, 19, 0.25);
+    border-color: rgba(139, 69, 19, 0.5);
+    box-shadow: 0 6px 30px rgba(139, 69, 19, 0.4);
+}
+
+.fidget-games-label {
+    font-size: 0.9em;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
 .settings-menu {
     position: fixed;
     top: 84px;
@@ -770,6 +801,55 @@ body::after {
 
 [data-theme="sunset"] .music-toggle-btn.active:hover {
     background: rgba(46, 125, 50, 0.25);
+}
+
+/* Fidget Games Button Styles */
+.fidget-games-section {
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+    margin-bottom: 16px;
+}
+
+.fidget-games-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    color: var(--text-color, #fff);
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.fidget-games-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-color, #8b5cf6);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+}
+
+.fidget-games-btn:active {
+    transform: translateY(0);
+}
+
+.fidget-games-text {
+    font-weight: 500;
+}
+
+/* Theme-specific fidget games button styles */
+[data-theme="lofi"] .fidget-games-btn:hover {
+    border-color: #ff00ff;
+    box-shadow: 0 4px 12px rgba(255, 0, 255, 0.2);
+}
+
+[data-theme="sunset"] .fidget-games-btn:hover {
+    border-color: #4a7c59;
+    box-shadow: 0 4px 12px rgba(74, 124, 89, 0.2);
 }
 
 /* iOS/iPhone specific slider improvements */
@@ -1782,6 +1862,122 @@ button:disabled::before {
     font-weight: 300;
 }
 
+/* Large desktop styles */
+@media (min-width: 1025px) {
+    .container {
+        padding: 100px 40px 40px;
+        max-width: 1000px;
+    }
+
+    h1 {
+        font-size: 3.2em;
+        margin-bottom: 15px;
+    }
+
+    .box {
+        width: 320px;
+        height: 320px;
+    }
+
+    .counter {
+        font-size: 8em;
+    }
+
+    .instruction {
+        font-size: 1.4em;
+        margin-bottom: 40px;
+    }
+
+    .settings-icon, .timer-icon, .fidget-games-icon {
+        padding: 14px 24px;
+        font-size: 1em;
+    }
+
+    .settings-label, .timer-label, .fidget-games-label {
+        font-size: 1em;
+    }
+
+    button {
+        padding: 16px 32px;
+        font-size: 1.1em;
+    }
+
+    .info {
+        font-size: 1em;
+        margin-top: 60px;
+    }
+}
+
+/* Tablet styles */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .container {
+        padding: 85px 25px 25px;
+        max-width: 900px;
+    }
+
+    h1 {
+        font-size: 2.8em;
+        margin-bottom: 12px;
+    }
+
+    .box {
+        width: 280px;
+        height: 280px;
+    }
+
+    .counter {
+        font-size: 7em;
+    }
+
+    .instruction {
+        font-size: 1.2em;
+        margin-bottom: 35px;
+    }
+
+    .settings-icon {
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+    }
+
+    .timer-icon {
+        top: 20px;
+        left: 20px;
+        padding: 12px 20px;
+    }
+
+    .fidget-games-icon {
+        top: 85px;
+        right: 20px;
+        padding: 12px 20px;
+    }
+
+    button {
+        padding: 14px 28px;
+        font-size: 1em;
+    }
+
+    .info {
+        font-size: 0.95em;
+        margin-top: 55px;
+    }
+
+    .settings-menu {
+        top: 80px;
+        right: 20px;
+        width: calc(100vw - 40px);
+        max-width: 350px;
+    }
+
+    .timer-menu {
+        top: 80px;
+        left: 20px;
+        width: calc(100vw - 40px);
+        max-width: 350px;
+    }
+}
+
+/* Mobile styles */
 @media (max-width: 768px) {
     body {
         align-items: flex-start;
@@ -1810,7 +2006,14 @@ button:disabled::before {
         font-size: 0.9em;
     }
 
-    .settings-label, .timer-label {
+    .fidget-games-icon {
+        top: 70px;
+        right: 12px;
+        padding: 10px 16px;
+        font-size: 0.9em;
+    }
+
+    .settings-label, .timer-label, .fidget-games-label {
         font-size: 0.8em;
     }
 
@@ -1884,6 +2087,95 @@ button:disabled::before {
     button {
         padding: 10px 28px;
         font-size: 0.9em;
+    }
+}
+
+/* Touch and high DPI improvements */
+@media (hover: none), (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    button, .settings-icon, .timer-icon, .fidget-games-icon {
+        min-height: 48px;
+        min-width: 48px;
+    }
+
+    .box {
+        border-width: 3px;
+    }
+}
+
+/* Landscape mobile optimization */
+@media (max-width: 768px) and (orientation: landscape) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        padding: 50px 10px 10px;
+    }
+
+    h1 {
+        font-size: 1.5em;
+        margin-bottom: 8px;
+    }
+
+    .box {
+        width: 180px;
+        height: 180px;
+    }
+
+    .counter {
+        font-size: 4em;
+    }
+
+    .instruction {
+        font-size: 1em;
+        margin-bottom: 15px;
+    }
+
+    .info {
+        margin-top: 25px;
+        font-size: 0.8em;
+    }
+
+    .settings-icon {
+        top: 8px;
+        right: 8px;
+        padding: 8px 12px;
+    }
+
+    .timer-icon {
+        top: 8px;
+        left: 8px;
+        padding: 8px 12px;
+    }
+
+    .fidget-games-icon {
+        top: 55px;
+        right: 8px;
+        padding: 8px 12px;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 320px) {
+    .container {
+        padding: 60px 8px 8px;
+    }
+
+    h1 {
+        font-size: 1.4em;
+    }
+
+    .box {
+        width: 140px;
+        height: 140px;
+    }
+
+    .counter {
+        font-size: 3.5em;
+    }
+
+    .settings-menu, .timer-menu {
+        width: calc(100vw - 16px);
     }
 }
 

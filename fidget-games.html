@@ -1,0 +1,2052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fidget Games - Breathe with Me</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Fidget Game Specific Styles */
+        .fidget-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 0.9em;
+            /* Prevent text selection */
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            /* Ensure proper button behavior */
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--accent-color);
+            transform: translateY(-1px);
+        }
+
+        .help-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+
+        .help-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--accent-color);
+            transform: scale(1.1);
+        }
+
+        .help-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .help-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--primary-bg, #1a1a2e);
+            border: 1px solid var(--accent-color);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 90vw;
+            max-height: 80vh;
+            overflow-y: auto;
+            color: var(--text-color);
+        }
+
+        .help-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5em;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .help-close:hover {
+            opacity: 1;
+        }
+
+        .game-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .control-btn {
+            padding: 8px 16px;
+            background: var(--button-bg);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.8em;
+        }
+
+        .control-btn:hover, .control-btn.active {
+            background: var(--button-hover);
+            border-color: var(--accent-color);
+            transform: translateY(-1px);
+        }
+
+        /* Different button colors for different functions */
+        .puzzle-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+        }
+
+        .puzzle-btn:hover, .puzzle-btn.active {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            border-color: #5a6fd8;
+        }
+
+        .grid-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-color: #f093fb;
+        }
+
+        .grid-btn:hover, .grid-btn.active {
+            background: linear-gradient(135deg, #e081e9 0%, #e3455a 100%);
+            border-color: #e081e9;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-color: #4facfe;
+        }
+
+        .action-btn:hover, .action-btn.active {
+            background: linear-gradient(135deg, #3d9aec 0%, #00e0ec 100%);
+            border-color: #3d9aec;
+        }
+
+        .game-grid {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .grid-container {
+            display: grid;
+            gap: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .grid-cell {
+            width: 44px;
+            height: 44px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .grid-cell.occupied {
+            border: 2px solid var(--accent-color);
+            transition: all 0.2s ease;
+        }
+
+        .grid-cell.occupied:hover {
+            transform: scale(1.05);
+            border-color: #FFD700;
+            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.4);
+        }
+
+        .grid-cell.hover {
+            background: rgba(139, 92, 246, 0.4) !important;
+            border: 2px solid #8B5CF6 !important;
+            transform: scale(1.05);
+        }
+
+        .grid-cell.invalid-hover {
+            background: rgba(239, 68, 68, 0.4) !important;
+            border: 2px solid #EF4444 !important;
+        }
+
+        .game-grid.drag-active {
+            background: rgba(139, 92, 246, 0.1);
+            border: 2px dashed var(--accent-color);
+        }
+
+        .blocks-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin: 30px 0;
+            min-height: 120px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+        }
+
+        .blocks-container.color-mode {
+            gap: 4px;
+            max-width: 90%;
+            margin: 20px auto;
+        }
+
+        .block {
+            border-radius: 8px;
+            cursor: grab;
+            transition: all 0.2s ease;
+            position: relative;
+            backdrop-filter: blur(5px);
+            padding: 3px;
+            margin: 5px;
+            display: inline-block;
+        }
+
+        .block:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .block.dragging {
+            cursor: grabbing;
+            z-index: 1000;
+            transform: scale(1.1);
+            opacity: 0.9;
+        }
+
+        .block.placed {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: scale(0.8);
+        }
+
+        .block.selected {
+            border: 3px solid #FFD700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+
+        .block-shape {
+            display: grid;
+            gap: 2px;
+        }
+
+        .block-cell {
+            width: 32px;
+            height: 32px;
+            border-radius: 3px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .rotate-hint {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .block:hover .rotate-hint {
+            opacity: 1;
+        }
+
+        .game-info {
+            margin: 20px 0;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        /* Mobile optimizations */
+        .mobile-instructions {
+            display: none;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid var(--accent-color);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 0.9em;
+        }
+
+        .selected-block-info {
+            display: none;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid #FFD700;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.85em;
+        }
+
+        /* Tablet styles */
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .fidget-container {
+                padding: 15px;
+                max-width: 95vw;
+            }
+
+            .title {
+                font-size: 2em;
+                margin: 15px 0;
+            }
+
+            .subtitle {
+                font-size: 1em;
+                margin-bottom: 25px;
+            }
+
+            .control-btn {
+                padding: 10px 18px;
+                font-size: 0.85em;
+                min-width: 85px;
+            }
+
+            .grid-cell {
+                width: 48px;
+                height: 48px;
+            }
+
+            .block-cell {
+                width: 30px;
+                height: 30px;
+            }
+
+            .grid-container {
+                gap: 3px;
+                padding: 14px;
+            }
+
+            .game-grid {
+                padding: 16px;
+                margin: 18px 0;
+            }
+
+            .blocks-container {
+                margin: 25px 0;
+                min-height: 140px;
+                max-height: 220px;
+                padding: 12px;
+                gap: 7px;
+            }
+
+            .block {
+                margin: 3px;
+                padding: 2px;
+                min-width: 38px;
+                min-height: 38px;
+            }
+
+            .help-button {
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+            }
+
+            .back-button {
+                padding: 12px 18px;
+                font-size: 1em;
+            }
+        }
+
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            .fidget-container {
+                padding: 5px;
+                max-width: 100vw;
+            }
+
+            .back-button {
+                position: static;
+                margin: 10px auto 20px;
+                display: block;
+                width: auto;
+                min-height: 44px; /* iOS touch target minimum */
+                text-align: center;
+                user-select: none;
+                -webkit-user-select: none;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .title {
+                font-size: 1.5em;
+                margin: 8px 0;
+            }
+
+            .subtitle {
+                font-size: 0.8em;
+                margin-bottom: 15px;
+            }
+            
+            .grid-cell {
+                width: 55px;
+                height: 55px;
+                border-width: 2px;
+            }
+
+            .block-cell {
+                width: 28px;
+                height: 28px;
+                border-width: 1px;
+            }
+
+            .grid-container {
+                gap: 4px;
+                padding: 15px;
+            }
+
+            .game-grid {
+                padding: 15px;
+                margin: 15px 0;
+            }
+            
+            .game-controls {
+                gap: 6px;
+                margin: 10px 0;
+            }
+            
+            .game-controls:nth-child(3) {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .game-controls:nth-child(4) {
+                flex-direction: row;
+                justify-content: space-around;
+            }
+            
+            .control-btn {
+                padding: 8px 12px;
+                font-size: 0.75em;
+                min-width: 70px;
+                min-height: 36px;
+                border-radius: 18px;
+            }
+
+            .mobile-instructions {
+                display: block;
+            }
+
+            .blocks-container {
+                margin: 20px 0;
+                min-height: 120px;
+                max-height: 200px;
+                padding: 10px;
+                gap: 6px;
+            }
+
+            .blocks-container.color-mode {
+                max-height: 180px;
+                gap: 3px;
+            }
+
+            .block {
+                margin: 1px;
+                padding: 1px;
+                min-width: 32px;
+                min-height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .block.selected {
+                border-width: 4px;
+                transform: scale(1.1);
+            }
+
+            .rotate-hint {
+                display: none;
+            }
+
+            .game-info {
+                font-size: 0.85em;
+                margin: 15px 0;
+                padding: 0 10px;
+            }
+
+            #mobileHint {
+                display: none;
+            }
+        }
+
+        /* Large desktop styles */
+        @media (min-width: 1025px) {
+            .fidget-container {
+                padding: 25px;
+                max-width: 1200px;
+            }
+
+            .title {
+                font-size: 2.5em;
+                margin: 20px 0;
+            }
+
+            .subtitle {
+                font-size: 1.1em;
+                margin-bottom: 30px;
+            }
+
+            .control-btn {
+                padding: 12px 24px;
+                font-size: 1em;
+                min-width: 100px;
+            }
+
+            .grid-cell {
+                width: 50px;
+                height: 50px;
+            }
+
+            .block-cell {
+                width: 36px;
+                height: 36px;
+            }
+
+            .grid-container {
+                gap: 3px;
+                padding: 16px;
+            }
+
+            .game-grid {
+                padding: 25px;
+                margin: 25px 0;
+            }
+
+            .blocks-container {
+                margin: 35px 0;
+                min-height: 160px;
+                max-height: 320px;
+                padding: 20px;
+                gap: 10px;
+            }
+
+            .block {
+                margin: 4px;
+                padding: 4px;
+                min-width: 48px;
+                min-height: 48px;
+            }
+
+            .help-button {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+
+            .back-button {
+                padding: 14px 22px;
+                font-size: 1.05em;
+            }
+        }
+
+        /* Small mobile styles */
+        @media (max-width: 480px) {
+            .fidget-container {
+                padding: 2px;
+            }
+
+            .grid-cell {
+                width: 52px;
+                height: 52px;
+            }
+
+            .block-cell {
+                width: 26px;
+                height: 26px;
+            }
+            
+            .game-grid {
+                padding: 15px;
+                margin: 8px 0;
+            }
+
+            .grid-container {
+                gap: 4px;
+            }
+
+            .control-btn {
+                padding: 6px 10px;
+                font-size: 0.7em;
+                min-width: 65px;
+                min-height: 32px;
+            }
+
+            .blocks-container {
+                max-height: 140px;
+                padding: 8px;
+                gap: 4px;
+            }
+
+            .block {
+                min-width: 30px;
+                min-height: 30px;
+                margin: 1px;
+                padding: 1px;
+            }
+
+            .title {
+                font-size: 1.3em;
+                margin: 5px 0;
+            }
+
+            .subtitle {
+                font-size: 0.75em;
+                margin-bottom: 10px;
+            }
+        }
+
+        /* Touch improvements and high DPI displays */
+        @media (hover: none), (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .block:hover {
+                transform: none;
+                box-shadow: none;
+            }
+
+            .block.selected {
+                animation: pulse 1.5s ease-in-out infinite;
+            }
+
+            @keyframes pulse {
+                0%, 100% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); }
+                50% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.8); }
+            }
+
+            /* Better touch targets for high DPI */
+            .control-btn {
+                min-height: 48px;
+                min-width: 48px;
+            }
+
+            .grid-cell, .block {
+                border-width: 2px;
+            }
+        }
+
+        /* Orientation-specific optimizations */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .fidget-container {
+                padding: 8px;
+            }
+
+            .title {
+                font-size: 1.3em;
+                margin: 5px 0;
+            }
+
+            .subtitle {
+                font-size: 0.75em;
+                margin-bottom: 10px;
+            }
+
+            .game-controls {
+                margin: 8px 0;
+                gap: 4px;
+            }
+
+            .control-btn {
+                padding: 6px 10px;
+                font-size: 0.7em;
+            }
+
+            .blocks-container {
+                max-height: 120px;
+                margin: 12px 0;
+            }
+
+            .game-grid {
+                margin: 10px 0;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            .fidget-container {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="fidget-container">
+        <button class="back-button" id="backButton">← Back to Breathing</button>
+        <button class="help-button" onclick="toggleHelp()" title="Help">?</button>
+        
+        <h1 class="title">Fidget Games</h1>
+        <p class="subtitle">Calming Puzzle Games for Focus and Relaxation</p>
+        
+        <div class="game-controls">
+            <button class="control-btn puzzle-btn active" id="sizeBtn" onclick="setMode('size')">Block Puzzle</button>
+            <button class="control-btn puzzle-btn" id="colorBtn" onclick="setMode('color')">Gradient Puzzle</button>
+        </div>
+        
+        <div class="game-controls">
+            <button class="control-btn grid-btn" onclick="setGridSize('small')">Small Grid</button>
+            <button class="control-btn grid-btn active" onclick="setGridSize('medium')">Medium Grid</button>
+            <button class="control-btn grid-btn" onclick="setGridSize('large')">Large Grid</button>
+        </div>
+        
+        <div class="game-controls">
+            <button class="control-btn action-btn" onclick="generateNewPuzzle()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 5px;">
+                    <polyline points="1 4 1 10 7 10"></polyline>
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                </svg>
+                New Puzzle
+            </button>
+            <button class="control-btn action-btn" onclick="resetPuzzle()">Reset</button>
+        </div>
+        
+        <div class="game-grid">
+            <div class="grid-container" id="gameGrid"></div>
+        </div>
+        
+        <div class="selected-block-info" id="selectedInfo">
+            <span id="selectedText">No block selected</span>
+        </div>
+
+        <div class="blocks-container" id="blocksContainer"></div>
+        
+        <div class="game-info">
+            <p id="modeInfo">Drag blocks to fill the grid completely.</p>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="help-modal" id="helpModal" onclick="closeHelp(event)">
+        <div class="help-content" onclick="event.stopPropagation()">
+            <button class="help-close" onclick="closeHelp()">×</button>
+            <h3>How to Play</h3>
+            <div id="helpText">
+                <h4>Block Puzzle Mode:</h4>
+                <p><strong>Desktop:</strong></p>
+                <ul>
+                    <li>Click blocks to rotate them</li>
+                    <li>Drag blocks to place on grid</li>
+                    <li>Drag placed blocks to move them</li>
+                </ul>
+                <p><strong>Mobile:</strong></p>
+                <ul>
+                    <li>Tap blocks to rotate</li>
+                    <li>Hold and drag to move blocks</li>
+                    <li>Drag placed blocks to move them</li>
+                </ul>
+                
+                <h4>Gradient Puzzle Mode:</h4>
+                <p><strong>Both Desktop & Mobile:</strong></p>
+                <ul>
+                    <li>Drag color squares to create gradients</li>
+                    <li>Drag placed squares to rearrange them</li>
+                    <li>Create your own unique color patterns</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let currentMode = 'size';
+        let currentGridSize = 'medium';
+        let gameGrid = [];
+        let gameBlocks = [];
+        let draggedBlock = null;
+        let selectedBlock = null;
+        let blockRotations = {};
+
+        // Tetris-like block shapes (relative positions)
+        const blockShapes = [
+            { name: 'I', cells: [[0,0], [0,1], [0,2], [0,3]] }, // Line
+            { name: 'O', cells: [[0,0], [0,1], [1,0], [1,1]] }, // Square  
+            { name: 'T', cells: [[0,1], [1,0], [1,1], [1,2]] }, // T-shape
+            { name: 'L', cells: [[0,0], [1,0], [2,0], [2,1]] }, // L-shape
+            { name: 'J', cells: [[0,1], [1,1], [2,1], [2,0]] }, // J-shape
+            { name: 'S', cells: [[0,1], [0,2], [1,0], [1,1]] }, // S-shape
+            { name: 'Z', cells: [[0,0], [0,1], [1,1], [1,2]] }, // Z-shape
+            { name: 'P', cells: [[0,0], [0,1], [1,0]] }, // Small L
+            { name: 'Q', cells: [[0,0], [1,0], [1,1]] }, // Small L flipped
+            { name: 'X', cells: [[0,0]] }, // Single block
+            { name: 'D', cells: [[0,0], [0,1]] }, // Domino
+        ];
+
+        // Grid dimensions based on size
+        function getGridDimensions() {
+            switch (currentGridSize) {
+                case 'small': return { rows: 4, cols: 3 };
+                case 'medium': return { rows: 5, cols: 4 };
+                case 'large': return { rows: 6, cols: 5 };
+                default: return { rows: 5, cols: 4 };
+            }
+        }
+
+        // Generate random colors for blocks
+        function generateColors(count) {
+            const baseHue = Math.random() * 360;
+            const colors = [];
+            for (let i = 0; i < count; i++) {
+                const hueVariation = (baseHue + (i * 40)) % 360;
+                const saturation = 30 + Math.random() * 30;
+                const lightness = 25 + Math.random() * 25;
+                colors.push(`hsl(${hueVariation}, ${saturation}%, ${lightness}%)`);
+            }
+            // Add some accent colors
+            colors.push('#D4AF37', '#C5A572', '#B8860B');
+            return colors;
+        }
+
+        // Generate blocks using Tetris-like shapes
+        function generateRandomBlocks() {
+            const { rows, cols } = getGridDimensions();
+            const totalCells = rows * cols;
+            const colors = generateColors(8);
+            
+            const blocks = [];
+            let remainingCells = totalCells;
+            let blockId = 1;
+            let attempts = 0;
+            
+            // Start with larger pieces, work down to smaller ones
+            const shapesBySize = [...blockShapes].sort((a, b) => b.cells.length - a.cells.length);
+            
+            while (remainingCells > 0 && blockId <= 12 && attempts < 50) {
+                attempts++;
+                
+                let selectedShape;
+                if (remainingCells === 1) {
+                    selectedShape = blockShapes.find(s => s.name === 'X');
+                } else if (remainingCells === 2) {
+                    selectedShape = blockShapes.find(s => s.name === 'D');
+                } else {
+                    // Pick shapes that fit in remaining space
+                    const validShapes = shapesBySize.filter(shape => {
+                        return shape.cells.length <= remainingCells && shape.cells.length <= Math.max(3, Math.floor(remainingCells / 2));
+                    });
+                    
+                    if (validShapes.length === 0) {
+                        selectedShape = blockShapes.find(s => s.name === 'X');
+                    } else {
+                        selectedShape = validShapes[Math.floor(Math.random() * validShapes.length)];
+                    }
+                }
+                
+                if (selectedShape) {
+                    blocks.push({
+                        id: blockId,
+                        shape: selectedShape,
+                        cells: [...selectedShape.cells], // Copy the cells
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        placed: false,
+                        gridX: -1,
+                        gridY: -1
+                    });
+                    
+                    remainingCells -= selectedShape.cells.length;
+                    blockId++;
+                }
+            }
+            
+            // Fill remaining space with single blocks if needed
+            while (remainingCells > 0 && blockId <= 15) {
+                blocks.push({
+                    id: blockId,
+                    shape: blockShapes.find(s => s.name === 'X'),
+                    cells: [[0,0]],
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    placed: false,
+                    gridX: -1,
+                    gridY: -1
+                });
+                remainingCells--;
+                blockId++;
+            }
+            
+            return blocks;
+        }
+
+        // Initialize the grid
+        function initializeGrid() {
+            const { rows, cols } = getGridDimensions();
+            const gridElement = document.getElementById('gameGrid');
+            
+            gridElement.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            gridElement.innerHTML = '';
+            
+            gameGrid = [];
+            for (let row = 0; row < rows; row++) {
+                gameGrid[row] = [];
+                for (let col = 0; col < cols; col++) {
+                    gameGrid[row][col] = null;
+                    
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    
+                    // Add drag and drop event listeners
+                    cell.addEventListener('dragover', handleDragOver);
+                    cell.addEventListener('drop', handleDrop);
+                    cell.addEventListener('dragenter', handleDragEnter);
+                    cell.addEventListener('dragleave', handleDragLeave);
+                    
+                    // Mobile tap-to-place and pickup functionality
+                    cell.addEventListener('click', (e) => {
+                        const row = parseInt(cell.dataset.row);
+                        const col = parseInt(cell.dataset.col);
+                        
+                        // Check if there's a block to pick up (both mobile and desktop)
+                        if (cell.dataset.blockId) {
+                            pickupBlock(parseInt(cell.dataset.blockId), row, col);
+                            return;
+                        }
+                        
+                        // Place selected block (mobile only - desktop uses drag and drop)
+                        if (window.innerWidth <= 768 && selectedBlock && !selectedBlock.placed) {
+                            const minRow = Math.min(...selectedBlock.cells.map(cell => cell[0]));
+                            const minCol = Math.min(...selectedBlock.cells.map(cell => cell[1]));
+                            const adjustedRow = row - minRow;
+                            const adjustedCol = col - minCol;
+                            
+                            if (canPlaceBlock(selectedBlock, adjustedRow, adjustedCol)) {
+                                placeBlock(selectedBlock, adjustedRow, adjustedCol);
+                                
+                                // Success haptic feedback
+                                if (navigator.vibrate) {
+                                    navigator.vibrate([50, 30, 50]);
+                                }
+                            } else {
+                                // Error feedback
+                                if (navigator.vibrate) {
+                                    navigator.vibrate(200);
+                                }
+                            }
+                        }
+                    });
+                    
+                    gridElement.appendChild(cell);
+                }
+            }
+        }
+
+        // Create block element
+        function createBlockElement(block) {
+            const blockElement = document.createElement('div');
+            blockElement.className = 'block';
+            blockElement.draggable = true;
+            blockElement.id = `block-${block.id}`;
+            
+            // Calculate dimensions
+            const minRow = Math.min(...block.cells.map(cell => cell[0]));
+            const maxRow = Math.max(...block.cells.map(cell => cell[0]));
+            const minCol = Math.min(...block.cells.map(cell => cell[1]));
+            const maxCol = Math.max(...block.cells.map(cell => cell[1]));
+            
+            const width = maxCol - minCol + 1;
+            const height = maxRow - minRow + 1;
+            
+            // Create shape container
+            const shapeDiv = document.createElement('div');
+            shapeDiv.className = 'block-shape';
+            shapeDiv.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
+            shapeDiv.style.gridTemplateRows = `repeat(${height}, 1fr)`;
+            
+            // Create a grid to hold the cells
+            const cellGrid = Array(height).fill(null).map(() => Array(width).fill(false));
+            
+            // Mark occupied cells
+            block.cells.forEach(([row, col]) => {
+                const adjustedRow = row - minRow;
+                const adjustedCol = col - minCol;
+                cellGrid[adjustedRow][adjustedCol] = true;
+            });
+            
+            // Create cell elements
+            for (let row = 0; row < height; row++) {
+                for (let col = 0; col < width; col++) {
+                    const cell = document.createElement('div');
+                    if (cellGrid[row][col]) {
+                        cell.className = 'block-cell';
+                        cell.style.background = block.color;
+                    } else {
+                        cell.style.visibility = 'hidden';
+                        cell.style.width = '32px';
+                        cell.style.height = '32px';
+                    }
+                    shapeDiv.appendChild(cell);
+                }
+            }
+            
+            blockElement.appendChild(shapeDiv);
+            
+            // Add rotate hint for desktop (only for block puzzle mode)
+            if (currentMode !== 'color') {
+                const rotateHint = document.createElement('div');
+                rotateHint.className = 'rotate-hint';
+                rotateHint.textContent = 'Click to rotate';
+                blockElement.appendChild(rotateHint);
+            }
+            
+            // Add event listeners
+            blockElement.addEventListener('dragstart', (e) => handleDragStart(e, block));
+            blockElement.addEventListener('dragend', handleDragEnd);
+            blockElement.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (window.innerWidth > 768) {
+                    rotateBlock(block.id);
+                }
+                // On mobile, we handle rotation through touch events, not click
+            });
+
+            // Mobile touch events: tap to rotate, hold to drag
+            let touchStartPos = null;
+            let isDragging = false;
+            let dragStartTime = 0;
+            let holdTimer = null;
+
+            blockElement.addEventListener('touchstart', (e) => {
+                if (window.innerWidth <= 768) {
+                    dragStartTime = Date.now();
+                    touchStartPos = {
+                        x: e.touches[0].clientX,
+                        y: e.touches[0].clientY
+                    };
+                    
+                    // Select the block on touch start
+                    selectBlock(block.id);
+                    isDragging = false;
+                    
+                    // Set up hold timer for dragging (300ms hold to start drag)
+                    holdTimer = setTimeout(() => {
+                        if (touchStartPos && !isDragging) {
+                            // Start hold-to-drag mode
+                            isDragging = true;
+                            draggedBlock = selectedBlock;
+                            blockElement.classList.add('dragging');
+                            document.querySelector('.game-grid').classList.add('drag-active');
+                            
+                            // Haptic feedback for hold start
+                            if (navigator.vibrate) {
+                                navigator.vibrate(50);
+                            }
+                        }
+                    }, 300);
+                    
+                    // Prevent default to avoid scrolling
+                    e.preventDefault();
+                }
+            });
+
+            blockElement.addEventListener('touchmove', (e) => {
+                if (touchStartPos && window.innerWidth <= 768) {
+                    e.preventDefault();
+                    
+                    const touch = e.touches[0];
+                    const deltaX = Math.abs(touch.clientX - touchStartPos.x);
+                    const deltaY = Math.abs(touch.clientY - touchStartPos.y);
+                    
+                    // If we're already in dragging mode, process the drag
+                    if (isDragging && draggedBlock) {
+                        const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                        
+                        if (elementBelow && elementBelow.classList.contains('grid-cell')) {
+                            const row = parseInt(elementBelow.dataset.row);
+                            const col = parseInt(elementBelow.dataset.col);
+                            
+                            const minRow = Math.min(...draggedBlock.cells.map(cell => cell[0]));
+                            const minCol = Math.min(...draggedBlock.cells.map(cell => cell[1]));
+                            const adjustedRow = row - minRow;
+                            const adjustedCol = col - minCol;
+                            
+                            highlightPlacement(adjustedRow, adjustedCol);
+                        } else {
+                            clearGridHover();
+                        }
+                    }
+                    // If significant movement occurs before hold timer completes, 
+                    // we'll let the timer decide what to do rather than canceling it
+                }
+            });
+
+            blockElement.addEventListener('touchend', (e) => {
+                if (touchStartPos && window.innerWidth <= 768) {
+                    const touchDuration = Date.now() - dragStartTime;
+                    const touch = e.changedTouches[0];
+                    const deltaX = Math.abs(touch.clientX - touchStartPos.x);
+                    const deltaY = Math.abs(touch.clientY - touchStartPos.y);
+                    const totalMovement = deltaX + deltaY;
+                    
+                    // Clear hold timer
+                    if (holdTimer) {
+                        clearTimeout(holdTimer);
+                        holdTimer = null;
+                    }
+                    
+                    if (isDragging && draggedBlock) {
+                        // Handle drag placement
+                        const touch = e.changedTouches[0];
+                        const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                        
+                        if (elementBelow && elementBelow.classList.contains('grid-cell')) {
+                            const row = parseInt(elementBelow.dataset.row);
+                            const col = parseInt(elementBelow.dataset.col);
+                            
+                            const minRow = Math.min(...draggedBlock.cells.map(cell => cell[0]));
+                            const minCol = Math.min(...draggedBlock.cells.map(cell => cell[1]));
+                            const adjustedRow = row - minRow;
+                            const adjustedCol = col - minCol;
+                        
+                            if (canPlaceBlock(draggedBlock, adjustedRow, adjustedCol)) {
+                                placeBlock(draggedBlock, adjustedRow, adjustedCol);
+                                
+                                // Success haptic feedback
+                                if (navigator.vibrate) {
+                                    navigator.vibrate([50, 30, 50]);
+                                }
+                            }
+                        }
+                    } else if (touchDuration < 280 && totalMovement < 20 && !isDragging && currentMode !== 'color') {
+                        // Quick tap with minimal movement to rotate (only in block mode, not color mode)
+                        rotateBlock(block.id);
+                        
+                        // Rotation haptic feedback
+                        if (navigator.vibrate) {
+                            navigator.vibrate(30);
+                        }
+                    }
+                    
+                    // Clean up dragging state
+                    blockElement.classList.remove('dragging');
+                    document.querySelector('.game-grid').classList.remove('drag-active');
+                    draggedBlock = null;
+                    isDragging = false;
+                    clearGridHover();
+                }
+                touchStartPos = null;
+            });
+            
+            return blockElement;
+        }
+
+        // Select block for mobile
+        function selectBlock(blockId) {
+            // Clear previous selection
+            document.querySelectorAll('.block').forEach(el => el.classList.remove('selected'));
+            
+            selectedBlock = gameBlocks.find(b => b.id === blockId);
+            if (selectedBlock && !selectedBlock.placed) {
+                document.getElementById(`block-${blockId}`).classList.add('selected');
+                updateSelectedBlockInfo();
+                
+                // Add haptic feedback on mobile if available
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+            }
+        }
+
+        // Update selected block info display
+        function updateSelectedBlockInfo() {
+            const infoDiv = document.getElementById('selectedInfo');
+            const textSpan = document.getElementById('selectedText');
+            
+            // if (selectedBlock && !selectedBlock.placed) {
+            //     infoDiv.style.display = 'block';
+            //     const shapeName = selectedBlock.shape ? selectedBlock.shape.name : 'Block';
+            //     const cellCount = selectedBlock.cells.length;
+            //     textSpan.textContent = `Selected: ${shapeName} (${cellCount} cell${cellCount > 1 ? 's' : ''})`;
+            // } else {
+            //     infoDiv.style.display = 'none';
+            //     textSpan.textContent = 'No block selected';
+            // }
+        }
+
+        // Render blocks
+        function renderBlocks() {
+            const container = document.getElementById('blocksContainer');
+            container.innerHTML = '';
+            
+            // Apply color mode styling
+            if (currentMode === 'color') {
+                container.classList.add('color-mode');
+            } else {
+                container.classList.remove('color-mode');
+            }
+            
+            // Update mobile instructions based on mode
+            updateMobileInstructions();
+            
+            gameBlocks.forEach(block => {
+                if (!block.placed) {
+                    const blockElement = createBlockElement(block);
+                    container.appendChild(blockElement);
+                }
+            });
+        }
+
+        // Update mobile instructions based on current mode
+        function updateMobileInstructions() {
+            const instructionsDiv = document.querySelector('.mobile-instructions');
+            if (instructionsDiv) {
+                if (currentMode === 'color') {
+                    instructionsDiv.innerHTML = `
+                        <strong>Instructions:</strong><br>
+                        1. Hold and drag squares to place them<br>
+                        2. Drag placed squares to move them<br>
+                        3. Create your own gradient pattern<br>
+                    `;
+                } else {
+                    instructionsDiv.innerHTML = `
+                        <strong>Instructions:</strong><br>
+                        1. Tap blocks to rotate them<br>
+                        2. Hold and drag to place on grid<br>
+                        3. Drag placed blocks to move them<br>
+                    `;
+                }
+            }
+        }
+
+        // Rotate block 90 degrees clockwise
+        function rotateBlock(blockId) {
+            const block = gameBlocks.find(b => b.id === blockId);
+            if (block && !block.placed) {
+                // Rotate the cells 90 degrees clockwise
+                const rotatedCells = block.cells.map(([row, col]) => [col, -row]);
+                
+                // Normalize coordinates to start from (0,0)
+                const minRow = Math.min(...rotatedCells.map(cell => cell[0]));
+                const minCol = Math.min(...rotatedCells.map(cell => cell[1]));
+                
+                block.cells = rotatedCells.map(([row, col]) => [row - minRow, col - minCol]);
+                
+                renderBlocks();
+            }
+        }
+
+        // Drag and drop handlers
+        function handleDragStart(e, block) {
+            draggedBlock = block;
+            e.target.classList.add('dragging');
+            document.querySelector('.game-grid').classList.add('drag-active');
+            
+            // Create a semi-transparent preview of the block
+            const preview = e.target.cloneNode(true);
+            preview.style.opacity = '0.5';
+            preview.style.transform = 'scale(0.8)';
+            e.dataTransfer.setDragImage(preview, preview.offsetWidth/2, preview.offsetHeight/2);
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            document.querySelector('.game-grid').classList.remove('drag-active');
+            draggedBlock = null;
+            clearGridHover();
+        }
+
+        // Drag handlers for placed blocks on grid
+        function handleGridCellDragStart(e) {
+            const blockId = parseInt(e.target.dataset.blockId);
+            const block = gameBlocks.find(b => b.id === blockId);
+            
+            if (block && block.placed) {
+                // Temporarily pick up the block for dragging
+                const originalGridX = block.gridX;
+                const originalGridY = block.gridY;
+                
+                // Remove from grid temporarily
+                for (let [cellRow, cellCol] of block.cells) {
+                    const gridRow = originalGridY + cellRow;
+                    const gridCol = originalGridX + cellCol;
+                    if (gameGrid[gridRow] && gameGrid[gridRow][gridCol] !== undefined) {
+                        gameGrid[gridRow][gridCol] = null;
+                    }
+                }
+                
+                // Mark as not placed and set as dragged block
+                block.placed = false;
+                draggedBlock = block;
+                
+                // Visual feedback
+                e.target.style.cursor = 'grabbing';
+                document.querySelector('.game-grid').classList.add('drag-active');
+                
+                // Store original position in case drag fails
+                block.originalGridX = originalGridX;
+                block.originalGridY = originalGridY;
+            }
+        }
+
+        function handleGridCellDragEnd(e) {
+            if (draggedBlock) {
+                // If block wasn't placed elsewhere, put it back in original position
+                if (!draggedBlock.placed && draggedBlock.originalGridX !== undefined) {
+                    // Check if original position is still available
+                    if (canPlaceBlock(draggedBlock, draggedBlock.originalGridY, draggedBlock.originalGridX)) {
+                        placeBlock(draggedBlock, draggedBlock.originalGridY, draggedBlock.originalGridX);
+                    } else {
+                        // If original position is taken, add back to available blocks
+                        draggedBlock.gridX = -1;
+                        draggedBlock.gridY = -1;
+                        selectedBlock = draggedBlock;
+                    }
+                }
+                
+                // Clean up
+                delete draggedBlock.originalGridX;
+                delete draggedBlock.originalGridY;
+                e.target.style.cursor = 'grab';
+            }
+            
+            document.querySelector('.game-grid').classList.remove('drag-active');
+            draggedBlock = null;
+            clearGridHover();
+            updateGridDisplay();
+            renderBlocks();
+        }
+
+        // Touch handlers for placed blocks on grid (mobile)
+        let gridTouchStart = null;
+        let gridTouchDragging = false;
+        
+        function handleGridCellTouchStart(e) {
+            if (window.innerWidth > 768) return; // Desktop uses mouse events
+            
+            const blockId = parseInt(e.target.dataset.blockId);
+            const block = gameBlocks.find(b => b.id === blockId);
+            
+            if (block && block.placed) {
+                gridTouchStart = {
+                    x: e.touches[0].clientX,
+                    y: e.touches[0].clientY,
+                    blockId: blockId,
+                    cell: e.target
+                };
+                gridTouchDragging = false;
+                e.preventDefault();
+            }
+        }
+        
+        function handleGridCellTouchMove(e) {
+            if (!gridTouchStart || window.innerWidth > 768) return;
+            
+            const touch = e.touches[0];
+            const deltaX = Math.abs(touch.clientX - gridTouchStart.x);
+            const deltaY = Math.abs(touch.clientY - gridTouchStart.y);
+            
+            // Start dragging if moved more than 10px
+            if (!gridTouchDragging && (deltaX > 10 || deltaY > 10)) {
+                gridTouchDragging = true;
+                
+                const block = gameBlocks.find(b => b.id === gridTouchStart.blockId);
+                if (block) {
+                    // Pick up the block for dragging
+                    const originalGridX = block.gridX;
+                    const originalGridY = block.gridY;
+                    
+                    // Remove from grid temporarily
+                    for (let [cellRow, cellCol] of block.cells) {
+                        const gridRow = originalGridY + cellRow;
+                        const gridCol = originalGridX + cellCol;
+                        if (gameGrid[gridRow] && gameGrid[gridRow][gridCol] !== undefined) {
+                            gameGrid[gridRow][gridCol] = null;
+                        }
+                    }
+                    
+                    // Mark as not placed and set as dragged block
+                    block.placed = false;
+                    draggedBlock = block;
+                    selectedBlock = block;
+                    
+                    // Store original position
+                    block.originalGridX = originalGridX;
+                    block.originalGridY = originalGridY;
+                    
+                    // Visual feedback
+                    document.querySelector('.game-grid').classList.add('drag-active');
+                    gridTouchStart.cell.classList.add('dragging');
+                }
+            }
+            
+            if (gridTouchDragging && draggedBlock) {
+                e.preventDefault();
+                const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                
+                if (elementBelow && elementBelow.classList.contains('grid-cell')) {
+                    const row = parseInt(elementBelow.dataset.row);
+                    const col = parseInt(elementBelow.dataset.col);
+                    
+                    const minRow = Math.min(...draggedBlock.cells.map(cell => cell[0]));
+                    const minCol = Math.min(...draggedBlock.cells.map(cell => cell[1]));
+                    const adjustedRow = row - minRow;
+                    const adjustedCol = col - minCol;
+                    
+                    highlightPlacement(adjustedRow, adjustedCol);
+                } else {
+                    clearGridHover();
+                }
+            }
+        }
+        
+        function handleGridCellTouchEnd(e) {
+            if (!gridTouchStart || window.innerWidth > 768) return;
+            
+            if (gridTouchDragging && draggedBlock) {
+                const touch = e.changedTouches[0];
+                const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                
+                if (elementBelow && elementBelow.classList.contains('grid-cell')) {
+                    const row = parseInt(elementBelow.dataset.row);
+                    const col = parseInt(elementBelow.dataset.col);
+                    
+                    const minRow = Math.min(...draggedBlock.cells.map(cell => cell[0]));
+                    const minCol = Math.min(...draggedBlock.cells.map(cell => cell[1]));
+                    const adjustedRow = row - minRow;
+                    const adjustedCol = col - minCol;
+                    
+                    if (canPlaceBlock(draggedBlock, adjustedRow, adjustedCol)) {
+                        placeBlock(draggedBlock, adjustedRow, adjustedCol);
+                        
+                        // Success haptic feedback
+                        if (navigator.vibrate) {
+                            navigator.vibrate([50, 30, 50]);
+                        }
+                    } else {
+                        // Return to original position if can't place
+                        if (canPlaceBlock(draggedBlock, draggedBlock.originalGridY, draggedBlock.originalGridX)) {
+                            placeBlock(draggedBlock, draggedBlock.originalGridY, draggedBlock.originalGridX);
+                        }
+                    }
+                } else {
+                    // Return to original position if dropped outside grid
+                    if (canPlaceBlock(draggedBlock, draggedBlock.originalGridY, draggedBlock.originalGridX)) {
+                        placeBlock(draggedBlock, draggedBlock.originalGridY, draggedBlock.originalGridX);
+                    }
+                }
+                
+                // Clean up
+                delete draggedBlock.originalGridX;
+                delete draggedBlock.originalGridY;
+            } else if (!gridTouchDragging) {
+                // If it was a tap (not drag), pick up the block
+                const blockId = parseInt(e.target.dataset.blockId);
+                if (blockId) {
+                    const row = parseInt(e.target.dataset.row);
+                    const col = parseInt(e.target.dataset.col);
+                    pickupBlock(blockId, row, col);
+                }
+            }
+            
+            // Reset state
+            gridTouchStart = null;
+            gridTouchDragging = false;
+            document.querySelector('.game-grid').classList.remove('drag-active');
+            if (e.target.classList) e.target.classList.remove('dragging');
+            draggedBlock = null;
+            clearGridHover();
+            updateGridDisplay();
+            renderBlocks();
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDragEnter(e) {
+            if (draggedBlock) {
+                const row = parseInt(e.target.dataset.row);
+                const col = parseInt(e.target.dataset.col);
+                
+                // Calculate the top-left position for the block based on its shape
+                const minRow = Math.min(...draggedBlock.cells.map(cell => cell[0]));
+                const minCol = Math.min(...draggedBlock.cells.map(cell => cell[1]));
+                
+                // Adjust placement position to account for block's internal offset
+                const adjustedRow = row - minRow;
+                const adjustedCol = col - minCol;
+                
+                highlightPlacement(adjustedRow, adjustedCol);
+            }
+        }
+
+        function handleDragLeave(e) {
+            // Only clear hover if we're leaving the grid entirely
+            if (!e.relatedTarget || !e.relatedTarget.classList.contains('grid-cell')) {
+                clearGridHover();
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const row = parseInt(e.target.dataset.row);
+            const col = parseInt(e.target.dataset.col);
+            
+            if (draggedBlock) {
+                // Calculate the top-left position for the block based on its shape
+                const minRow = Math.min(...draggedBlock.cells.map(cell => cell[0]));
+                const minCol = Math.min(...draggedBlock.cells.map(cell => cell[1]));
+                
+                // Adjust placement position to account for block's internal offset
+                const adjustedRow = row - minRow;
+                const adjustedCol = col - minCol;
+                
+                if (canPlaceBlock(draggedBlock, adjustedRow, adjustedCol)) {
+                    placeBlock(draggedBlock, adjustedRow, adjustedCol);
+                }
+            }
+            clearGridHover();
+        }
+
+        // Check if block can be placed at position
+        function canPlaceBlock(block, row, col) {
+            const { rows, cols } = getGridDimensions();
+            
+            for (let [cellRow, cellCol] of block.cells) {
+                const gridRow = row + cellRow;
+                const gridCol = col + cellCol;
+                
+                if (gridRow < 0 || gridRow >= rows || gridCol < 0 || gridCol >= cols) {
+                    return false;
+                }
+                
+                if (gameGrid[gridRow][gridCol] !== null) {
+                    return false;
+                }
+                
+                // In color mode, allow free placement - no restrictions
+                // Players can create their own gradient arrangement
+            }
+            
+            return true;
+        }
+
+        // Place block on grid
+        function placeBlock(block, row, col) {
+            for (let [cellRow, cellCol] of block.cells) {
+                const gridRow = row + cellRow;
+                const gridCol = col + cellCol;
+                gameGrid[gridRow][gridCol] = block.id;
+            }
+            
+            block.placed = true;
+            block.gridX = col;
+            block.gridY = row;
+            
+            // Clear selection on mobile
+            selectedBlock = null;
+            document.querySelectorAll('.block').forEach(el => el.classList.remove('selected'));
+            updateSelectedBlockInfo();
+            
+            updateGridDisplay();
+            renderBlocks();
+            checkWinCondition();
+        }
+
+        // Pick up a placed block from the grid
+        function pickupBlock(blockId, clickRow, clickCol) {
+            const block = gameBlocks.find(b => b.id === blockId);
+            if (!block || !block.placed) return;
+            
+            // Remove block from grid
+            for (let [cellRow, cellCol] of block.cells) {
+                const gridRow = block.gridY + cellRow;
+                const gridCol = block.gridX + cellCol;
+                if (gameGrid[gridRow] && gameGrid[gridRow][gridCol] !== undefined) {
+                    gameGrid[gridRow][gridCol] = null;
+                }
+            }
+            
+            // Mark block as not placed
+            block.placed = false;
+            block.gridX = -1;
+            block.gridY = -1;
+            
+            // Auto-select the picked up block
+            selectedBlock = block;
+            
+            // Haptic feedback for pickup
+            if (navigator.vibrate) {
+                navigator.vibrate(100);
+            }
+            
+            updateGridDisplay();
+            renderBlocks();
+            updateSelectedBlockInfo();
+        }
+
+        // Highlight potential placement
+        function highlightPlacement(row, col) {
+            clearGridHover();
+            
+            if (draggedBlock) {
+                for (let [cellRow, cellCol] of draggedBlock.cells) {
+                    const gridRow = row + cellRow;
+                    const gridCol = col + cellCol;
+                    const { rows, cols } = getGridDimensions();
+                    
+                    if (gridRow >= 0 && gridRow < rows && gridCol >= 0 && gridCol < cols) {
+                        const cell = document.querySelector(`[data-row="${gridRow}"][data-col="${gridCol}"]`);
+                        if (cell) {
+                            // Check individual cell validity
+                            let isValid = gameGrid[gridRow][gridCol] === null;
+                            
+                            // In color mode, allow free placement anywhere
+                            // Players create their own color arrangements
+                            
+                            cell.classList.add(isValid ? 'hover' : 'invalid-hover');
+                        }
+                    }
+                }
+            }
+        }
+
+        // Clear grid hover effects
+        function clearGridHover() {
+            document.querySelectorAll('.grid-cell.hover, .grid-cell.invalid-hover').forEach(cell => {
+                cell.classList.remove('hover', 'invalid-hover');
+            });
+        }
+
+        // Update grid display
+        function updateGridDisplay() {
+            const { rows, cols } = getGridDimensions();
+            
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                    const blockId = gameGrid[row][col];
+                    
+                    if (blockId !== null) {
+                        const block = gameBlocks.find(b => b.id === blockId);
+                        cell.style.background = block.color;
+                        cell.classList.add('occupied');
+                        cell.style.cursor = 'grab';
+                        cell.title = 'Drag to move this block';
+                        cell.draggable = true;
+                        
+                        // Add data attribute to identify which block is here
+                        cell.dataset.blockId = blockId;
+                        
+                        // Remove any existing drag listeners to avoid duplicates
+                        cell.removeEventListener('dragstart', handleGridCellDragStart);
+                        cell.removeEventListener('dragend', handleGridCellDragEnd);
+                        
+                        // Add drag listeners for placed blocks
+                        cell.addEventListener('dragstart', handleGridCellDragStart);
+                        cell.addEventListener('dragend', handleGridCellDragEnd);
+                        
+                        // Add touch drag support for mobile
+                        cell.addEventListener('touchstart', handleGridCellTouchStart);
+                        cell.addEventListener('touchmove', handleGridCellTouchMove);
+                        cell.addEventListener('touchend', handleGridCellTouchEnd);
+                    } else {
+                        cell.style.background = 'rgba(0, 0, 0, 0.2)';
+                        cell.classList.remove('occupied');
+                        cell.style.cursor = 'default';
+                        cell.title = '';
+                        cell.draggable = false;
+                        delete cell.dataset.blockId;
+                        
+                        // Remove drag listeners from empty cells
+                        cell.removeEventListener('dragstart', handleGridCellDragStart);
+                        cell.removeEventListener('dragend', handleGridCellDragEnd);
+                        cell.removeEventListener('touchstart', handleGridCellTouchStart);
+                        cell.removeEventListener('touchmove', handleGridCellTouchMove);
+                        cell.removeEventListener('touchend', handleGridCellTouchEnd);
+                    }
+                }
+            }
+        }
+
+        // Check win condition
+        function checkWinCondition() {
+            const allPlaced = gameBlocks.every(block => block.placed);
+            if (allPlaced) {
+               
+            }
+        }
+
+        // Game mode functions
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('#sizeBtn, #colorBtn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(mode + 'Btn').classList.add('active');
+            
+            const info = document.getElementById('modeInfo');
+            if (mode === 'size') {
+                info.textContent = 'Drag blocks to fill the grid completely.';
+                generateNewPuzzle();
+            } else {
+                info.textContent = 'Create your own beautiful color gradient by arranging the colored squares.';
+                generateColorPuzzle();
+            }
+        }
+
+        function setGridSize(size) {
+            currentGridSize = size;
+            document.querySelectorAll('.grid-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            generateNewPuzzle();
+        }
+
+        function generateNewPuzzle() {
+            if (currentMode === 'color') {
+                generateColorPuzzle();
+            } else {
+                gameBlocks = generateRandomBlocks();
+                blockRotations = {};
+                initializeGrid();
+                renderBlocks();
+            }
+        }
+
+        // Generate color matching puzzle
+        function generateColorPuzzle() {
+            const { rows, cols } = getGridDimensions();
+            
+            // Create empty grid with subtle hints
+            initializeGrid();
+            const gridElement = document.getElementById('gameGrid');
+            
+            // Create empty grid cells with position-based target colors (not visible)
+            const totalCells = rows * cols;
+            let cellIndex = 0;
+            
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                    if (cell) {
+                        // Set target color data but don't show it visually
+                        const hue = (cellIndex / totalCells) * 360;
+                        const saturation = 45 + (cellIndex % 3) * 15;
+                        const lightness = 35 + (cellIndex % 4) * 10;
+                        
+                        // Keep the cell empty with just a subtle border
+                        cell.style.background = 'rgba(0, 0, 0, 0.2)';
+                        cell.style.border = '1px solid rgba(255,255,255,0.2)';
+                        
+                        // Store target color data for matching logic
+                        cell.dataset.targetHue = Math.round(hue);
+                        cell.dataset.targetSat = Math.round(saturation);
+                        cell.dataset.targetLight = Math.round(lightness);
+                        cell.dataset.targetColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                        
+                        cellIndex++;
+                    }
+                }
+            }
+            
+            // Generate blocks with colors that should match specific zones
+            gameBlocks = generateColorBlocks();
+            
+            // Place one end color (dark purple/magenta) in a corner to start
+            if (gameBlocks.length > 0) {
+                // Find a corner cell (preferably top-left)
+                const cornerRow = 0;
+                const cornerCol = 0;
+                
+                // Find an end color block (highest hue value - should be purples/magentas)
+                const endColorBlock = gameBlocks.reduce((prev, current) => {
+                    return (prev.targetHue > current.targetHue) ? prev : current;
+                });
+                
+                if (endColorBlock && canPlaceBlock(endColorBlock, cornerRow, cornerCol)) {
+                    placeBlock(endColorBlock, cornerRow, cornerCol);
+                }
+            }
+            
+            renderBlocks();
+        }
+
+        // Different gradient color schemes
+        const gradientSchemes = [
+            {
+                name: "Rainbow Spectrum",
+                generator: (i, total) => {
+                    const hue = (i / total) * 360;
+                    const saturation = 45 + (i % 3) * 15;
+                    const lightness = 35 + (i % 4) * 10;
+                    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                }
+            },
+            {
+                name: "Ocean Blues",
+                generator: (i, total) => {
+                    const hue = 180 + (i / total) * 120; // Blue to cyan to green
+                    const saturation = 60 + (i % 2) * 20;
+                    const lightness = 30 + (i / total) * 30;
+                    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                }
+            },
+            {
+                name: "Sunset Warmth",
+                generator: (i, total) => {
+                    const hue = 0 + (i / total) * 60; // Red to orange to yellow
+                    const saturation = 70 + (i % 3) * 10;
+                    const lightness = 40 + (i / total) * 25;
+                    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                }
+            },
+            {
+                name: "Forest Greens",
+                generator: (i, total) => {
+                    const hue = 90 + (i / total) * 80; // Yellow-green to blue-green
+                    const saturation = 40 + (i % 4) * 15;
+                    const lightness = 25 + (i / total) * 35;
+                    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                }
+            },
+            {
+                name: "Purple Dreams",
+                generator: (i, total) => {
+                    const hue = 240 + (i / total) * 120; // Blue to purple to magenta
+                    const saturation = 50 + (i % 3) * 20;
+                    const lightness = 30 + (i / total) * 30;
+                    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                }
+            },
+            {
+                name: "Monochrome Blues",
+                generator: (i, total) => {
+                    const hue = 220; // Fixed blue hue
+                    const saturation = 30 + (i / total) * 40;
+                    const lightness = 20 + (i / total) * 50;
+                    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                }
+            },
+            {
+                name: "Earth Tones",
+                generator: (i, total) => {
+                    const hue = 20 + (i / total) * 40; // Brown to orange tones
+                    const saturation = 40 + (i % 3) * 20;
+                    const lightness = 25 + (i / total) * 30;
+                    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                }
+            },
+            {
+                name: "Pastel Rainbow",
+                generator: (i, total) => {
+                    const hue = (i / total) * 360;
+                    const saturation = 30 + (i % 2) * 15; // Lower saturation for pastels
+                    const lightness = 65 + (i % 3) * 10; // Higher lightness for pastels
+                    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                }
+            }
+        ];
+
+        // Generate blocks for color matching
+        function generateColorBlocks() {
+            const { rows, cols } = getGridDimensions();
+            const totalCells = rows * cols;
+            const blocks = [];
+            let blockId = 1;
+            
+            // Choose a random gradient scheme
+            const scheme = gradientSchemes[Math.floor(Math.random() * gradientSchemes.length)];
+            console.log(`Generated ${scheme.name} color scheme`);
+            
+            // Update the info text to show which scheme is active
+            const info = document.getElementById('modeInfo');
+            if (info) {
+                info.textContent = `Create your own beautiful ${scheme.name.toLowerCase()} gradient by arranging the colored squares.`;
+            }
+            
+            // Generate colors using the selected scheme
+            const colors = [];
+            for (let i = 0; i < totalCells; i++) {
+                const color = scheme.generator(i, totalCells);
+                colors.push({
+                    color: color,
+                    index: i
+                });
+            }
+            
+            // Shuffle the colors array for random distribution
+            for (let i = colors.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [colors[i], colors[j]] = [colors[j], colors[i]];
+            }
+            
+            // Create single-cell blocks for each color
+            colors.forEach(colorData => {
+                blocks.push({
+                    id: blockId,
+                    cells: [[0,0]], // Always single cell
+                    shape: { cells: [[0,0]] },
+                    color: colorData.color,
+                    colorIndex: colorData.index,
+                    placed: false,
+                    gridX: -1,
+                    gridY: -1
+                });
+                blockId++;
+            });
+            
+            return blocks;
+        }
+
+        function resetPuzzle() {
+            // Reset all blocks to unplaced and original rotation
+            gameBlocks.forEach(block => {
+                block.placed = false;
+                block.gridX = -1;
+                block.gridY = -1;
+                // Reset to original shape
+                block.cells = [...block.shape.cells];
+            });
+            
+            // Clear selections
+            selectedBlock = null;
+            document.querySelectorAll('.block').forEach(el => el.classList.remove('selected'));
+            
+            // Clear grid
+            const { rows, cols } = getGridDimensions();
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    gameGrid[row][col] = null;
+                }
+            }
+            
+            updateGridDisplay();
+            renderBlocks();
+        }
+
+        // Help modal functions
+        function toggleHelp() {
+            const modal = document.getElementById('helpModal');
+            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function closeHelp(event) {
+            if (!event || event.target.id === 'helpModal' || event.target.classList.contains('help-close')) {
+                document.getElementById('helpModal').style.display = 'none';
+            }
+        }
+
+        // Back to breathing function
+        function goBackToBreathing() {
+            console.log('Navigating back to breathing app...');
+            
+            // Add haptic feedback on mobile
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+            
+            // Try multiple methods to ensure reliable navigation back
+            try {
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Navigation failed:', error);
+                // Fallback: try going back in history
+                console.log('Trying browser back...');
+                window.history.back();
+            }
+        }
+
+        // Initialize game on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            generateNewPuzzle();
+            
+            // Setup back button for both desktop and mobile
+            const backButton = document.getElementById('backButton');
+            if (backButton) {
+                console.log('Back button found, setting up event listeners...');
+                
+                let touchHandled = false;
+                
+                // Handle touch events for mobile
+                backButton.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    console.log('Back button touch start');
+                    backButton.style.background = 'rgba(255, 255, 255, 0.3)';
+                    touchHandled = false;
+                });
+                
+                backButton.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Back button touch end - navigating...');
+                    backButton.style.background = '';
+                    touchHandled = true;
+                    goBackToBreathing();
+                });
+                
+                // Handle click events for desktop (avoid double-firing with touch)
+                backButton.addEventListener('click', function(e) {
+                    if (touchHandled) {
+                        touchHandled = false;
+                        return;
+                    }
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Back button clicked - navigating...');
+                    goBackToBreathing();
+                });
+                
+                // Prevent any context menu on long press
+                backButton.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                });
+                
+            } else {
+                console.error('Back button not found!');
+            }
+        });
+    </script>
+</body>
+</html>

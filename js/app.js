@@ -1448,3 +1448,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// Fidget Games functionality
+function openFidgetGames() {
+    // Navigate to fidget games in the same window for seamless transition
+    window.location.href = 'fidget-games.html';
+}
