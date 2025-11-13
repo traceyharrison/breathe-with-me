@@ -110,6 +110,109 @@
             opacity: 1;
         }
 
+        /* Success Modal Styles */
+        .success-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1001;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .success-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 25px;
+            padding: 40px;
+            text-align: center;
+            max-width: 90vw;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            animation: slideInScale 0.4s ease-out;
+        }
+
+        .success-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            animation: bounce 0.6s ease-in-out;
+        }
+
+        .success-title {
+            color: white;
+            font-size: 2.5em;
+            margin: 0 0 15px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            font-weight: bold;
+        }
+
+        .success-message {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+
+        .success-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .success-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 24px;
+            border-radius: 15px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .success-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .success-btn.secondary {
+            background: rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInScale {
+            from { 
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0;
+            }
+            to { 
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
         .game-controls {
             display: flex;
             flex-wrap: wrap;
@@ -226,12 +329,63 @@
             justify-content: center;
             margin: 30px 0;
             min-height: 120px;
-            max-height: 300px;
+            max-height: 350px;
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 15px;
             background: rgba(255, 255, 255, 0.03);
             border-radius: 15px;
             backdrop-filter: blur(5px);
+            border: 2px solid rgba(139, 92, 246, 0.2);
+            position: relative;
+            /* Enhanced scrollbar styling */
+            scrollbar-width: thin;
+            scrollbar-color: rgba(139, 92, 246, 0.9) rgba(255, 255, 255, 0.15);
+        }
+        
+        /* Add a subtle gradient at the bottom to indicate more content */
+        .blocks-container::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(to top, rgba(255, 255, 255, 0.1), transparent);
+            border-radius: 0 0 13px 13px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .blocks-container.has-overflow::after {
+            opacity: 1;
+        }
+
+        /* Enhanced webkit scrollbar styling for better visibility */
+        .blocks-container::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        .blocks-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            margin: 5px 0;
+        }
+
+        .blocks-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, rgba(139, 92, 246, 0.9), rgba(139, 92, 246, 0.7));
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .blocks-container::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, rgba(139, 92, 246, 1), rgba(139, 92, 246, 0.9));
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .blocks-container::-webkit-scrollbar-thumb:active {
+            background: rgba(139, 92, 246, 1);
         }
 
         .blocks-container.color-mode {
@@ -310,6 +464,49 @@
             margin: 20px 0;
             color: var(--text-color);
             opacity: 0.8;
+        }
+
+        .random-indicator {
+            display: inline-block;
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d, #6bcf7f, #4ecdc4, #45b7d1, #96ceb4);
+            background-size: 200% 200%;
+            animation: gradientShift 3s ease infinite;
+            color: #fff;
+            font-weight: bold;
+            font-size: 0.85em;
+            padding: 6px 12px;
+            border-radius: 20px;
+            margin-top: 8px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .scroll-hint {
+            text-align: center;
+            margin: 5px 0;
+            opacity: 0.7;
+            font-size: 0.8em;
+            color: var(--accent-color);
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        .scroll-text {
+            display: inline-block;
+            padding: 4px 8px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
         }
 
         /* Mobile optimizations */
@@ -489,9 +686,25 @@
                 gap: 6px;
             }
 
+            .blocks-container {
+                max-height: 250px;
+                padding: 10px;
+                margin: 20px 0;
+            }
+            
             .blocks-container.color-mode {
-                max-height: 180px;
+                max-height: 200px;
                 gap: 3px;
+            }
+            
+            /* Make scrollbar more visible on mobile */
+            .blocks-container::-webkit-scrollbar {
+                width: 14px;
+            }
+            
+            .blocks-container::-webkit-scrollbar-thumb {
+                background: rgba(139, 92, 246, 1);
+                border: 2px solid rgba(255, 255, 255, 0.2);
             }
 
             .block {
@@ -521,6 +734,31 @@
 
             #mobileHint {
                 display: none;
+            }
+
+            /* Success modal mobile adjustments */
+            .success-content {
+                padding: 30px 20px;
+                margin: 20px;
+                max-width: calc(100vw - 40px);
+            }
+
+            .success-title {
+                font-size: 2em;
+            }
+
+            .success-message {
+                font-size: 1.1em;
+            }
+
+            .success-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .success-btn {
+                width: 100%;
+                max-width: 200px;
             }
         }
 
@@ -761,8 +999,15 @@
 
         <div class="blocks-container" id="blocksContainer"></div>
         
+        <div class="scroll-hint" id="scrollHint" style="display: none;">
+            <span class="scroll-text">↕ Scroll to see more blocks ↕</span>
+        </div>
+        
         <div class="game-info">
             <p id="modeInfo">Drag blocks to fill the grid completely.</p>
+            <div class="random-indicator" id="randomIndicator" style="display: none;">
+                ✨ <span>Randomly Generated!</span> ✨
+            </div>
         </div>
     </div>
 
@@ -793,6 +1038,19 @@
                     <li>Drag placed squares to rearrange them</li>
                     <li>Create your own unique color patterns</li>
                 </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message Modal -->
+    <div class="success-modal" id="successModal" onclick="closeSuccess(event)">
+        <div class="success-content" onclick="event.stopPropagation()">
+            <div class="success-icon">🎉</div>
+            <h2 class="success-title">Great Work!</h2>
+            <p class="success-message" id="successMessage">Congratulations! You've completed the puzzle!</p>
+            <div class="success-actions">
+                <button class="success-btn" onclick="generateNewPuzzle(); closeSuccess();">New Puzzle</button>
+                <button class="success-btn secondary" onclick="closeSuccess();">Continue</button>
             </div>
         </div>
     </div>
@@ -1233,6 +1491,47 @@
                     container.appendChild(blockElement);
                 }
             });
+            
+            // Adjust container height and detect overflow
+            adjustBlocksContainerHeight();
+        }
+        
+        // Dynamically adjust blocks container height based on content and grid size
+        function adjustBlocksContainerHeight() {
+            const container = document.getElementById('blocksContainer');
+            const scrollHint = document.getElementById('scrollHint');
+            const { rows, cols } = getGridDimensions();
+            const totalCells = rows * cols;
+            
+            // Calculate optimal height based on grid size and number of blocks
+            let maxHeight = 350; // Default
+            
+            if (totalCells > 64) { // Large grids (8x8+)
+                maxHeight = 400;
+            } else if (totalCells > 36) { // Medium grids (6x6+)
+                maxHeight = 375;
+            } else if (totalCells <= 16) { // Small grids (4x4 or smaller)
+                maxHeight = 250;
+            }
+            
+            // Mobile adjustments
+            if (window.innerWidth <= 768) {
+                maxHeight = Math.min(maxHeight, window.innerHeight * 0.3); // Max 30% of screen height
+            }
+            
+            container.style.maxHeight = maxHeight + 'px';
+            
+            // Check for overflow and add visual indicators
+            setTimeout(() => {
+                const isOverflowing = container.scrollHeight > container.clientHeight;
+                if (isOverflowing) {
+                    container.classList.add('has-overflow');
+                    if (scrollHint) scrollHint.style.display = 'block';
+                } else {
+                    container.classList.remove('has-overflow');
+                    if (scrollHint) scrollHint.style.display = 'none';
+                }
+            }, 100);
         }
 
         // Update mobile instructions based on current mode
@@ -1712,7 +2011,10 @@
         function checkWinCondition() {
             const allPlaced = gameBlocks.every(block => block.placed);
             if (allPlaced) {
-               
+                // Small delay to let the final placement animation complete
+                setTimeout(() => {
+                    showSuccess();
+                }, 500);
             }
         }
 
@@ -1725,11 +2027,16 @@
             document.getElementById(mode + 'Btn').classList.add('active');
             
             const info = document.getElementById('modeInfo');
+            const randomIndicator = document.getElementById('randomIndicator');
+            const scrollHint = document.getElementById('scrollHint');
+            
             if (mode === 'size') {
                 info.textContent = 'Drag blocks to fill the grid completely.';
+                if (randomIndicator) randomIndicator.style.display = 'none';
+                if (scrollHint) scrollHint.style.display = 'none';
                 generateNewPuzzle();
             } else {
-                info.textContent = 'Create your own beautiful color gradient by arranging the colored squares.';
+              //  info.textContent = 'Create your own beautiful color gradient by arranging the colored squares.';
                 generateColorPuzzle();
             }
         }
@@ -1889,6 +2196,59 @@
             }
         ];
 
+        // Generate a completely random gradient scheme
+        function generateRandomGradient() {
+            const randomTypes = [
+                {
+                    name: "Random Spectrum",
+                    generator: (i, total) => {
+                        const baseHue = Math.random() * 360;
+                        const hueRange = 60 + Math.random() * 180; // Random range 60-240 degrees
+                        const hue = baseHue + (i / total) * hueRange;
+                        const saturation = 40 + Math.random() * 40; // 40-80%
+                        const lightness = 25 + (i / total) * 40 + Math.random() * 15; // Variable progression
+                        return `hsl(${hue % 360}, ${saturation}%, ${lightness}%)`;
+                    }
+                },
+                {
+                    name: "Random Monochrome",
+                    generator: (i, total) => {
+                        const baseHue = Math.random() * 360;
+                        const hue = baseHue + (Math.random() - 0.5) * 30; // Slight hue variation
+                        const saturation = 20 + Math.random() * 60; // 20-80%
+                        const lightness = 15 + (i / total) * 60; // Dark to light progression
+                        return `hsl(${hue % 360}, ${saturation}%, ${lightness}%)`;
+                    }
+                },
+                {
+                    name: "Random Complementary",
+                    generator: (i, total) => {
+                        const baseHue = Math.random() * 360;
+                        const isFirstHalf = i < total / 2;
+                        const hue = isFirstHalf ? baseHue : (baseHue + 180) % 360;
+                        const progress = isFirstHalf ? (i / (total / 2)) : ((i - total / 2) / (total / 2));
+                        const saturation = 50 + Math.random() * 30; // 50-80%
+                        const lightness = 30 + progress * 30; // Gradual lightening
+                        return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                    }
+                },
+                {
+                    name: "Random Triadic",
+                    generator: (i, total) => {
+                        const baseHue = Math.random() * 360;
+                        const section = Math.floor(i / (total / 3));
+                        const hue = (baseHue + section * 120) % 360;
+                        const progress = (i % (total / 3)) / (total / 3);
+                        const saturation = 45 + Math.random() * 35; // 45-80%
+                        const lightness = 25 + progress * 35;
+                        return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                    }
+                }
+            ];
+            
+            return randomTypes[Math.floor(Math.random() * randomTypes.length)];
+        }
+
         // Generate blocks for color matching
         function generateColorBlocks() {
             const { rows, cols } = getGridDimensions();
@@ -1896,14 +2256,30 @@
             const blocks = [];
             let blockId = 1;
             
-            // Choose a random gradient scheme
-            const scheme = gradientSchemes[Math.floor(Math.random() * gradientSchemes.length)];
-            console.log(`Generated ${scheme.name} color scheme`);
+            // 25% chance to use a random gradient, 75% chance to use predefined schemes
+            let scheme;
+            if (Math.random() < 0.25) {
+                scheme = generateRandomGradient();
+                console.log(`Generated random ${scheme.name} color scheme`);
+            } else {
+                scheme = gradientSchemes[Math.floor(Math.random() * gradientSchemes.length)];
+                console.log(`Generated ${scheme.name} color scheme`);
+            }
             
             // Update the info text to show which scheme is active
             const info = document.getElementById('modeInfo');
+            const randomIndicator = document.getElementById('randomIndicator');
             if (info) {
-                info.textContent = `Create your own beautiful ${scheme.name.toLowerCase()} gradient by arranging the colored squares.`;
+                const isRandomScheme = scheme.name.startsWith('Random');
+                const schemeText = isRandomScheme ? 
+                    scheme.name.toLowerCase() : 
+                    scheme.name.toLowerCase();
+              //  info.textContent = `Create your own beautiful ${schemeText} gradient by arranging the colored squares. A starter color is placed in the top-left corner!`;
+                
+                // Show/hide random indicator
+                if (randomIndicator) {
+                    randomIndicator.style.display = isRandomScheme ? 'block' : 'none';
+                }
             }
             
             // Generate colors using the selected scheme
@@ -1912,40 +2288,111 @@
                 const color = scheme.generator(i, totalCells);
                 colors.push({
                     color: color,
-                    index: i
+                    index: i,
+                    saturation: getSaturationValue(color),
+                    lightness: getLightnessValue(color)
                 });
             }
             
-            // Shuffle the colors array for random distribution
-            for (let i = colors.length - 1; i > 0; i--) {
+            // Find the most saturated or darkest color for starter
+            let starterColorIndex = 0;
+            let maxValue = 0;
+            
+            colors.forEach((colorData, index) => {
+                // Combine saturation and darkness (inverse lightness) for selection criteria
+                const combinedValue = colorData.saturation + (100 - colorData.lightness);
+                if (combinedValue > maxValue) {
+                    maxValue = combinedValue;
+                    starterColorIndex = index;
+                }
+            });
+            
+            // Shuffle all colors except the starter
+            const starterColor = colors[starterColorIndex];
+            const otherColors = colors.filter((_, index) => index !== starterColorIndex);
+            
+            for (let i = otherColors.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                [colors[i], colors[j]] = [colors[j], colors[i]];
+                [otherColors[i], otherColors[j]] = [otherColors[j], otherColors[i]];
             }
             
-            // Create single-cell blocks for each color
-            colors.forEach(colorData => {
+            // Create blocks - starter first, then others
+            const allColors = [starterColor, ...otherColors];
+            
+            allColors.forEach((colorData, index) => {
+                const isStarter = index === 0;
                 blocks.push({
                     id: blockId,
                     cells: [[0,0]], // Always single cell
                     shape: { cells: [[0,0]] },
                     color: colorData.color,
                     colorIndex: colorData.index,
-                    placed: false,
-                    gridX: -1,
-                    gridY: -1
+                    placed: isStarter,
+                    gridX: isStarter ? 0 : -1,
+                    gridY: isStarter ? 0 : -1,
+                    isStarter: isStarter
                 });
                 blockId++;
             });
             
+            // Place starter color in grid
+            if (blocks.length > 0) {
+                setTimeout(() => {
+                    placeStarterColor(blocks[0]);
+                }, 100);
+            }
+            
             return blocks;
+        }
+        
+        // Helper functions for color analysis
+        function getSaturationValue(hslColor) {
+            const match = hslColor.match(/hsl\(\d+,\s*(\d+)%,/);
+            return match ? parseInt(match[1]) : 0;
+        }
+        
+        function getLightnessValue(hslColor) {
+            const match = hslColor.match(/hsl\(\d+,\s*\d+%,\s*(\d+)%\)/);
+            return match ? parseInt(match[1]) : 50;
+        }
+        
+        // Place the starter color in the top-left corner
+        function placeStarterColor(starterBlock) {
+            const gridElement = document.getElementById('gameGrid');
+            const topLeftCell = gridElement.querySelector('[data-row="0"][data-col="0"]');
+            
+            if (topLeftCell && gameGrid) {
+                // Place in grid array
+                gameGrid[0][0] = starterBlock.id;
+                
+                // Update visual
+                topLeftCell.style.background = starterBlock.color;
+                topLeftCell.classList.add('filled');
+                topLeftCell.dataset.blockId = starterBlock.id;
+                topLeftCell.innerHTML = '<div style="width:100%;height:100%;border-radius:4px;"></div>';
+                
+                // Update block status
+                starterBlock.placed = true;
+                starterBlock.gridX = 0;
+                starterBlock.gridY = 0;
+                
+                console.log('Starter color placed at top-left corner');
+            }
         }
 
         function resetPuzzle() {
             // Reset all blocks to unplaced and original rotation
             gameBlocks.forEach(block => {
-                block.placed = false;
-                block.gridX = -1;
-                block.gridY = -1;
+                // Keep starter color placed in color mode
+                if (currentMode === 'color' && block.isStarter) {
+                    block.placed = true;
+                    block.gridX = 0;
+                    block.gridY = 0;
+                } else {
+                    block.placed = false;
+                    block.gridX = -1;
+                    block.gridY = -1;
+                }
                 // Reset to original shape
                 block.cells = [...block.shape.cells];
             });
@@ -1958,7 +2405,13 @@
             const { rows, cols } = getGridDimensions();
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
-                    gameGrid[row][col] = null;
+                    // Keep starter color in color mode at position (0,0)
+                    if (currentMode === 'color' && row === 0 && col === 0) {
+                        const starterBlock = gameBlocks.find(block => block.isStarter);
+                        gameGrid[row][col] = starterBlock ? starterBlock.id : null;
+                    } else {
+                        gameGrid[row][col] = null;
+                    }
                 }
             }
             
@@ -1978,6 +2431,32 @@
             }
         }
 
+        // Success modal functions
+        function showSuccess() {
+            const modal = document.getElementById('successModal');
+            const message = document.getElementById('successMessage');
+            
+            // Customize message based on mode
+            if (currentMode === 'color') {
+                message.textContent = 'Amazing! You\'ve created a beautiful gradient masterpiece!';
+            } else {
+                message.textContent = 'Fantastic! You\'ve perfectly solved the block puzzle!';
+            }
+            
+            modal.style.display = 'block';
+            
+            // Add haptic feedback on mobile
+            if (navigator.vibrate) {
+                navigator.vibrate([100, 50, 100, 50, 200]);
+            }
+        }
+
+        function closeSuccess(event) {
+            if (!event || event.target.id === 'successModal' || event.target.classList.contains('success-close')) {
+                document.getElementById('successModal').style.display = 'none';
+            }
+        }
+
         // Back to breathing function
         function goBackToBreathing() {
             console.log('Navigating back to breathing app...');
@@ -1987,15 +2466,8 @@
                 navigator.vibrate(50);
             }
             
-            // Try multiple methods to ensure reliable navigation back
-            try {
-                window.location.href = 'index.html';
-            } catch (error) {
-                console.error('Navigation failed:', error);
-                // Fallback: try going back in history
-                console.log('Trying browser back...');
-                window.history.back();
-            }
+            // Simple, reliable navigation
+            window.location.replace('index.html');
         }
 
         // Initialize game on page load
@@ -2007,40 +2479,32 @@
             if (backButton) {
                 console.log('Back button found, setting up event listeners...');
                 
-                let touchHandled = false;
-                
-                // Handle touch events for mobile
-                backButton.addEventListener('touchstart', function(e) {
+                // Simple unified event handler
+                function handleBackButton(e) {
                     e.preventDefault();
-                    console.log('Back button touch start');
+                    e.stopPropagation();
+                    console.log('Back button activated - navigating...');
+                    goBackToBreathing();
+                }
+                
+                // Add all possible event listeners
+                backButton.addEventListener('click', handleBackButton);
+                backButton.addEventListener('touchend', handleBackButton);
+                backButton.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        handleBackButton(e);
+                    }
+                });
+                
+                // Visual feedback for touch
+                backButton.addEventListener('touchstart', function(e) {
                     backButton.style.background = 'rgba(255, 255, 255, 0.3)';
-                    touchHandled = false;
                 });
                 
                 backButton.addEventListener('touchend', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Back button touch end - navigating...');
-                    backButton.style.background = '';
-                    touchHandled = true;
-                    goBackToBreathing();
-                });
-                
-                // Handle click events for desktop (avoid double-firing with touch)
-                backButton.addEventListener('click', function(e) {
-                    if (touchHandled) {
-                        touchHandled = false;
-                        return;
-                    }
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Back button clicked - navigating...');
-                    goBackToBreathing();
-                });
-                
-                // Prevent any context menu on long press
-                backButton.addEventListener('contextmenu', function(e) {
-                    e.preventDefault();
+                    setTimeout(() => {
+                        backButton.style.background = '';
+                    }, 100);
                 });
                 
             } else {
